@@ -30,7 +30,6 @@ void Controller::update() {
     
     elapsedTime = window->GetFrameTime();
         
-    // Example keyboard input
     if (window->GetInput().IsKeyDown(sf::Key::Left)) {
         goals[0].goalHit();
     }
@@ -39,7 +38,9 @@ void Controller::update() {
         goals[1].goalHit();
     }
     
-    actionSets[0].update(elapsedTime);
+    for (int i = 0; i < actionSets.size(); i++) {
+        actionSets[i].update(elapsedTime);
+    }
 }
 
 void Controller::draw() {
