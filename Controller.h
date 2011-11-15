@@ -14,9 +14,8 @@ private:
     sf::Image targetImg;
     sf::Image goalImg;
     
-    ActionSet* set1;
-    Goal* goal1;
-    Goal* goal2;
+    std::vector<ActionSet> actionSets;
+    std::vector<Goal> goals;
     
     float elapsedTime;
     

@@ -32,23 +32,23 @@ void Controller::update() {
         
     // Example keyboard input
     if (window->GetInput().IsKeyDown(sf::Key::Left)) {
-        goal1->goalHit();
+        goals[0].goalHit();
     }
     
     if (window->GetInput().IsKeyDown(sf::Key::Right)) {
-        goal2->goalHit();
+        goals[1].goalHit();
     }
     
-    set1->update(elapsedTime);
+    actionSets[0].update(elapsedTime);
 }
 
 void Controller::draw() {
     window->Clear();
     
     // Draw stuff here
-    set1->draw(window);
-    goal1->draw(window);
-    goal2->draw(window);
+    actionSets[0].draw(window);
+    goals[0].draw(window);
+    goals[1].draw(window);
     
     window->Display();
 }
@@ -73,11 +73,11 @@ void Controller::loadResources() {
 }
 
 void Controller::initializeObjects() {
-    set1 = new ActionSet();
+    actionSets.push_back(ActionSet());
+    actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, 100, 0, 0));
+    actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, 100, 1, 40));
+
     
-    set1->targets.push_back(Target(&targetImg, 100, 0, 0));
-    set1->targets.push_back(Target(&targetImg, 100, 1, 40));
-    
-    goal1 = new Goal(&goalImg, 500, 0);
-    goal2 = new Goal(&goalImg, 500, 1);
+    goals.push_back(Goal(&goalImg, 500, 0));
+    goals.push_back(Goal(&goalImg, 500, 1));
 }

@@ -2,8 +2,6 @@
 
 #include "ColumnObject.h"
 
-#define vec2 sf::Vector2f
-
 
 class Goal : public ColumnObject {
 private:
@@ -16,6 +14,4 @@ public:
     void draw(sf::RenderWindow* window);
     
     void goalHit();
-    
-    vec2 getPosition();
 };

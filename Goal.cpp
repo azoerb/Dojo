@@ -9,6 +9,7 @@ Goal::Goal(sf::Image* img, int goalPosition, int column) : ColumnObject(img, col
 }
 
 void Goal::draw(sf::RenderWindow* window) {
+    // Resize the Goal depending on which frame of the animation it's in.
     if (hitFrames > HIT_FRAMES / 2) {
         newSize += HIT_RATIO / HIT_FRAMES * size;
         hitFrames--;
@@ -21,11 +22,8 @@ void Goal::draw(sf::RenderWindow* window) {
 }
 
 void Goal::goalHit() {
+    // This sets the frame limit for the Goal bounce animation.
     if (hitFrames == 0) {
         hitFrames = HIT_FRAMES;
     }
-}
-
-vec2 Goal::getPosition() {
-    return sprite.GetPosition();
 }

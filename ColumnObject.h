@@ -1,3 +1,5 @@
+// This is a parent object for Goals and Targets
+
 #pragma once
 
 #include "Constants.h"
@@ -30,5 +32,9 @@ public:
             default:
                 break;
         }
+    }
+    
+    vec2 getPosition() {
+        return sprite.GetPosition();
     }
 };

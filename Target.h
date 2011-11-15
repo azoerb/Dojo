@@ -2,8 +2,6 @@
 
 #include "ColumnObject.h"
 
-#define vec2 sf::Vector2f
-
 
 class Target : public ColumnObject {
 private:
@@ -15,6 +13,4 @@ public:
     void update(float elapsedTime);
     
     void draw(sf::RenderWindow* window);
-    
-    vec2 getPosition();
 };

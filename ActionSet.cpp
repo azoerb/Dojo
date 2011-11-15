@@ -11,3 +11,12 @@ void ActionSet::draw(sf::RenderWindow* window) {
         targets[i].draw(window);
     }
 }
+
+std::vector<Target>* ActionSet::getTargets() {
+    return &targets;
+}
+
+void ActionSet::addTarget(Target target) {
+    targets.push_back(target);
+}
+

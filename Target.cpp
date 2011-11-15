@@ -8,14 +8,10 @@ Target::Target(sf::Image* img, int speed, int column, int offset) : ColumnObject
 }
 
 void Target::update(float elapsedTime) {
-    vec2 pos = sprite.GetPosition();
+    vec2 pos = getPosition();
     sprite.SetPosition(pos.x, pos.y + elapsedTime * speed);
 }
 
 void Target::draw(sf::RenderWindow* window) {
     window->Draw(sprite);
-}
-
-vec2 Target::getPosition() {
-    return sprite.GetPosition();
 }
