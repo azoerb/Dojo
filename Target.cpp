@@ -1,0 +1,21 @@
+#include "Target.h"
+
+
+Target::Target(sf::Image* img, int speed, int column, int offset) : ColumnObject(img, column) {
+    this->speed = speed;
+
+    sprite.SetPosition(vec2((column + 1) * COLUMN_WIDTH, -(size + offset)));
+}
+
+void Target::update(float elapsedTime) {
+    vec2 pos = sprite.GetPosition();
+    sprite.SetPosition(pos.x, pos.y + elapsedTime * speed);
+}
+
+void Target::draw(sf::RenderWindow* window) {
+    window->Draw(sprite);
+}
+
+vec2 Target::getPosition() {
+    return sprite.GetPosition();
+}

@@ -4,9 +4,19 @@
 
 #define vec2 sf::Vector2f
 
+class ActionSet;
+class Goal;
+
 class Controller {
 private:
     sf::RenderWindow* window;
+    
+    sf::Image targetImg;
+    sf::Image goalImg;
+    
+    ActionSet* set1;
+    Goal* goal1;
+    Goal* goal2;
     
     float elapsedTime;
     
