@@ -37,4 +37,8 @@ public:
     vec2 getPosition() {
         return sprite.GetPosition();
     }
+    
+    int getSize() {
+        return size;
+    }
 };

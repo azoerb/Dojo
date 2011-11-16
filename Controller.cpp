@@ -40,7 +40,35 @@ void Controller::update() {
     
     for (int i = 0; i < actionSets.size(); i++) {
         actionSets[i].update(elapsedTime);
+        
+        // Remove any off-screen Targets
+        std::vector<Target>* targets = actionSets[i].getTargets();
+        for (int j = 0; j < targets->size(); j++) {
+            if (targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
+                actionSets[i].removeTarget(j);
+                
+                // Once all of the actionSet's targets are gone
+                if (targets->size() == 0) {
+                    // Determine accuracy and play animation
+                    float accuracy = actionSets[i].getAccuracy();
+                    
+                    // TODO: Probably want to have these be dynamicaly
+                    // based on difficulty level instead of static.
+                    if (accuracy > 80) {
+                        
+                    } else if (accuracy > 40) {
+                        
+                    } else {
+                        
+                    }
+                    
+                    // Delete the actionSet
+                    actionSets.erase(actionSets.begin() + i);
+                }
+            }
+        }
     }
+    
 }
 
 void Controller::draw() {

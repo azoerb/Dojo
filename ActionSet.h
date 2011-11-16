@@ -5,8 +5,11 @@
 class ActionSet {
 private:
     std::vector<Target> targets;
+    float accuracy;
     
-public:    
+public:
+    ActionSet();
+    
     std::vector<Target>* getTargets();
     
     void update(float elapsedTime);
@@ -14,4 +17,8 @@ public:
     void draw(sf::RenderWindow* window);
     
     void addTarget(Target target);
+    
+    void removeTarget(int index);
+    
+    float getAccuracy();
 };
