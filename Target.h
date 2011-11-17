@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ColumnObject.h"
+#include "Goal.h"
 
 
 class Target : public ColumnObject {
@@ -13,4 +14,6 @@ public:
     void update(float elapsedTime);
     
     void draw(sf::RenderWindow* window);
+
+	bool hit(Goal* goal);
 };

@@ -6,6 +6,8 @@ class ActionSet {
 private:
     std::vector<Target> targets;
     float accuracy;
+	int numTargets;
+	int numTargetsHit;
     
 public:
     ActionSet();
@@ -18,7 +20,7 @@ public:
     
     void addTarget(Target target);
     
-    void removeTarget(int index);
+    void removeTarget(int index, bool hit = false);
     
     float getAccuracy();
 };

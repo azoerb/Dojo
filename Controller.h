@@ -29,4 +29,5 @@ public:
     void processEvents();
     void loadResources();
     void initializeObjects();
+	void addRandomSet();
 };

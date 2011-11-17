@@ -1,3 +1,5 @@
+#include <stdlib.h>;
+#include <stdio.h>;
 #include "Target.h"
 
 
@@ -14,4 +16,11 @@ void Target::update(float elapsedTime) {
 
 void Target::draw(sf::RenderWindow* window) {
     window->Draw(sprite);
+}
+
+bool Target::hit(Goal* goal) {
+	if(abs(goal->getPosition().y - this->getPosition().y) < 25) {
+		return true;
+	}
+	return false;
 }

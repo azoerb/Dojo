@@ -41,4 +41,8 @@ public:
     int getSize() {
         return size;
     }
+
+	int getColumn() {
+		return column;
+	}
 };

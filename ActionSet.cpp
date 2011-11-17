@@ -1,6 +1,8 @@
 #include "ActionSet.h"
 
 ActionSet::ActionSet() {
+	numTargets = 0;
+	numTargetsHit = 0;
     accuracy = 0.0;
 }
 
@@ -22,10 +24,15 @@ std::vector<Target>* ActionSet::getTargets() {
 
 void ActionSet::addTarget(Target target) {
     targets.push_back(target);
+	numTargets++;
 }
 
-void ActionSet::removeTarget(int index) {
+void ActionSet::removeTarget(int index, bool hit) {
     targets.erase(targets.begin() + index);
+
+	if(hit) {
+		numTargetsHit++;
+	}
 }
 
 float ActionSet::getAccuracy() {
