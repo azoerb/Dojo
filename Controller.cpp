@@ -26,34 +26,32 @@ void Controller::mainLoop() {
 }
 
 void Controller::update() {
+    // reset all key presses
+    for(int i = 0; i < NUM_COLUMNS; i++) {
+        keyPresses[i] = false;
+    }
+
     processEvents();
     
     elapsedTime = window->GetFrameTime();
 
-	bool leftHit = false, rightHit = false;
-        
-    if (window->GetInput().IsKeyDown(sf::Key::Left)) {
-        goals[0].goalHit();
-		leftHit = true;
-    }
-    
-    if (window->GetInput().IsKeyDown(sf::Key::Right)) {
-        goals[1].goalHit();
-		rightHit = true;
-    }
-    
-    for (int i = 0; i < actionSets.size(); i++) {
+	for (int i = 0; i < actionSets.size(); i++) {
         actionSets[i].update(elapsedTime);
         
         std::vector<Target>* targets = actionSets[i].getTargets();
         for (int j = 0; j < targets->size(); j++) {
 
 			// Remove Target if key is hit
-			if (leftHit && targets->at(j).getColumn() == 0 && targets->at(j).hit(&goals[0])) {
+			if (keyPresses[0] && targets->at(j).getColumn() == 0 && targets->at(j).hit(&goals[0])) {
 				actionSets[i].removeTarget(j, true);
 			}
-			// Remove Target if key is hit
-			else if (rightHit && targets->at(j).getColumn() == 1 && targets->at(j).hit(&goals[1])) {
+			else if (keyPresses[1] && targets->at(j).getColumn() == 1 && targets->at(j).hit(&goals[1])) {
+				actionSets[i].removeTarget(j, true);
+			}
+            else if (keyPresses[2] && targets->at(j).getColumn() == 2 && targets->at(j).hit(&goals[2])) {
+				actionSets[i].removeTarget(j, true);
+			}
+            else if (keyPresses[3] && targets->at(j).getColumn() == 3 && targets->at(j).hit(&goals[3])) {
 				actionSets[i].removeTarget(j, true);
 			}
 			// Remove any off-screen Targets
@@ -79,8 +77,9 @@ void Controller::update() {
                 // Delete the actionSet
                 actionSets.erase(actionSets.begin() + i);
 				
-				// add another actionSet
+                // reset targets, goals
 				addRandomSet();
+                randomizeGoals();
 			}
         }
     }
@@ -106,8 +105,28 @@ void Controller::processEvents() {
     sf::Event Event;
     while (window->GetEvent(Event)) {
         // Close window : exit
-        if (Event.Type == sf::Event::Closed)
+        if (Event.Type == sf::Event::Closed) {
             window->Close();
+        } else if (Event.Type == sf::Event::KeyReleased) {
+            switch(Event.Key.Code) {
+            case sf::Key::Q:
+                goals[0].goalHit();
+                keyPresses[0] = true;
+                break;
+            case sf::Key::W:
+                goals[1].goalHit();
+                keyPresses[1] = true;
+                break;
+            case sf::Key::E:
+                goals[2].goalHit();
+                keyPresses[2] = true;
+                break;
+            case sf::Key::R:
+                goals[3].goalHit();
+                keyPresses[3] = true;
+                break;
+            }
+        }
     }
 }
 
@@ -130,13 +149,26 @@ void Controller::initializeObjects() {
     
     goals.push_back(Goal(&goalImg, 500, 0));
     goals.push_back(Goal(&goalImg, 500, 1));
+    goals.push_back(Goal(&goalImg, 500, 2));
+    goals.push_back(Goal(&goalImg, 500, 3));
 }
 
 void Controller::addRandomSet() {
-	int numTargets = rand() % 10 + 1;
+	int numTargets = 2 + rand() % 14;
+    int speed = 100 + rand() % 100;
 
 	actionSets.push_back(ActionSet());
 	for(int i = 0; i < numTargets; i++) {
-		actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, 100, rand()%2, 64*i));
+		actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, speed, rand() % NUM_COLUMNS, 64*i));
 	}
+}
+
+void Controller::randomizeGoals() {
+    goals.clear();
+
+    int pos = 250 + rand() % 250;
+
+    for(int i = 0; i < NUM_COLUMNS; i++) {
+        goals.push_back(Goal(&goalImg, pos, i));
+    }
 }

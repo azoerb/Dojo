@@ -29,6 +29,12 @@ public:
             case 1:
                 sprite.SetColor(sf::Color(0, 0, 255, 255));
                 break;
+            case 2:
+                sprite.SetColor(sf::Color(0, 255, 0, 255));
+                break;
+            case 3:
+                sprite.SetColor(sf::Color(255, 0, 0, 255));
+                break;
             default:
                 break;
         }

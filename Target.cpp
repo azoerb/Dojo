@@ -5,7 +5,7 @@
 
 Target::Target(sf::Image* img, int speed, int column, int offset) : ColumnObject(img, column) {
     this->speed = speed;
-
+    
     sprite.SetPosition(vec2((column + 1) * COLUMN_WIDTH, -(size + offset)));
 }
 
@@ -20,7 +20,7 @@ void Target::draw(sf::RenderWindow* window) {
 
 bool Target::hit(Goal* goal) {
 	if(abs(goal->getPosition().y - this->getPosition().y) < 25) {
-		return true;
+        return true;
 	}
 	return false;
 }

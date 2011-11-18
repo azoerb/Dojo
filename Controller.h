@@ -16,6 +16,8 @@ private:
     
     std::vector<ActionSet> actionSets;
     std::vector<Goal> goals;
+
+    bool keyPresses[4];
     
     float elapsedTime;
     
@@ -30,4 +32,5 @@ public:
     void loadResources();
     void initializeObjects();
 	void addRandomSet();
+    void randomizeGoals();
 };
