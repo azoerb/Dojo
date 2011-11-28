@@ -36,5 +36,10 @@ void ActionSet::removeTarget(int index, bool hit) {
 }
 
 float ActionSet::getAccuracy() {
-    return accuracy;
+    return accuracy / numTargets;
 }
+
+void ActionSet::changeAccuracy(float delta) {
+    accuracy += delta;
+}
+

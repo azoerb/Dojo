@@ -15,5 +15,5 @@ public:
     
     void draw(sf::RenderWindow* window);
 
-	bool hit(Goal* goal);
+	float hit(Goal* goal);
 };

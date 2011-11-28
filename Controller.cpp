@@ -26,6 +26,7 @@ void Controller::mainLoop() {
 }
 
 void Controller::update() {
+    bool hit;
     // reset all key presses
     for(int i = 0; i < NUM_COLUMNS; i++) {
         keyPresses[i] = false;
@@ -40,22 +41,25 @@ void Controller::update() {
         
         std::vector<Target>* targets = actionSets[i].getTargets();
         for (int j = 0; j < targets->size(); j++) {
-
+            hit = false;
+            
 			// Remove Target if key is hit
-			if (keyPresses[0] && targets->at(j).getColumn() == 0 && targets->at(j).hit(&goals[0])) {
-				actionSets[i].removeTarget(j, true);
-			}
-			else if (keyPresses[1] && targets->at(j).getColumn() == 1 && targets->at(j).hit(&goals[1])) {
-				actionSets[i].removeTarget(j, true);
-			}
-            else if (keyPresses[2] && targets->at(j).getColumn() == 2 && targets->at(j).hit(&goals[2])) {
-				actionSets[i].removeTarget(j, true);
-			}
-            else if (keyPresses[3] && targets->at(j).getColumn() == 3 && targets->at(j).hit(&goals[3])) {
-				actionSets[i].removeTarget(j, true);
-			}
+			for (int k = 0; k < NUM_COLUMNS; k++) {
+                if (keyPresses[k] && targets->at(j).getColumn() == k) {
+                    float result = targets->at(j).hit(&goals[k]);
+                    
+                    if (result == -1) {
+                        actionSets[i].changeAccuracy(MISS_PENALTY);
+                    } else {
+                        actionSets[i].changeAccuracy(result);
+                        actionSets[i].removeTarget(j, true);
+                        hit = true;
+                    }
+                }
+            }
+            
 			// Remove any off-screen Targets
-            else if (targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
+            if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
                 actionSets[i].removeTarget(j);
             }
 
@@ -67,11 +71,11 @@ void Controller::update() {
                 // TODO: Probably want to have these be dynamicaly
                 // based on difficulty level instead of static.
                 if (accuracy > 80) {
-                    
+                    printf("Good\n");
                 } else if (accuracy > 40) {
-                    
+                    printf("OK\n");
                 } else {
-                    
+                    printf("Bad\n");
                 }
                 
                 // Delete the actionSet
@@ -79,7 +83,7 @@ void Controller::update() {
 				
                 // reset targets, goals
 				addRandomSet();
-                randomizeGoals();
+                //randomizeGoals();
 			}
         }
     }
@@ -142,10 +146,7 @@ void Controller::loadResources() {
 void Controller::initializeObjects() {
 	srand ( time(NULL) );
 
-    actionSets.push_back(ActionSet());
-    actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, 100, 0, 0));
-    actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, 100, 1, 40));
-
+    addRandomSet();
     
     goals.push_back(Goal(&goalImg, 500, 0));
     goals.push_back(Goal(&goalImg, 500, 1));
@@ -154,12 +155,12 @@ void Controller::initializeObjects() {
 }
 
 void Controller::addRandomSet() {
-	int numTargets = 2 + rand() % 14;
-    int speed = 100 + rand() % 100;
+	int numTargets = MIN_NUM_TARGETS + rand() % (MAX_NUM_TARGETS - MIN_NUM_TARGETS);
+    int speed = MIN_TARGET_SPEED + rand() % (MAX_TARGET_SPEED - MIN_TARGET_SPEED);
 
 	actionSets.push_back(ActionSet());
 	for(int i = 0; i < numTargets; i++) {
-		actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, speed, rand() % NUM_COLUMNS, 64*i));
+		actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, speed, rand() % NUM_COLUMNS, COLUMN_WIDTH * i));
 	}
 }
 

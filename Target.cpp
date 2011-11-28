@@ -18,9 +18,10 @@ void Target::draw(sf::RenderWindow* window) {
     window->Draw(sprite);
 }
 
-bool Target::hit(Goal* goal) {
-	if(abs(goal->getPosition().y - this->getPosition().y) < 25) {
-        return true;
+float Target::hit(Goal* goal) {
+    float dist = abs(goal->getPosition().y - this->getPosition().y);
+	if(dist <= MAX_HIT_DISTANCE) {
+        return 100.0 - dist / MAX_HIT_DISTANCE * 100.0;
 	}
-	return false;
+	return -1;
 }

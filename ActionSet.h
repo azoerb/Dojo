@@ -23,4 +23,6 @@ public:
     void removeTarget(int index, bool hit = false);
     
     float getAccuracy();
+    
+    void changeAccuracy(float delta);
 };
