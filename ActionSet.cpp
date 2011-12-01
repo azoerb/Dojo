@@ -42,4 +42,3 @@ float ActionSet::getAccuracy() {
 void ActionSet::changeAccuracy(float delta) {
     accuracy += delta;
 }
-

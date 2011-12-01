@@ -2,6 +2,7 @@
 #include "ActionSet.h"
 #include "Goal.h"
 #include <math.h>
+#include <sstream>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -92,7 +93,11 @@ void Controller::update() {
 
 void Controller::draw() {
     window->Clear();
-
+    
+    window->Draw(background);
+    window->Draw(animation);
+    animation.Update();
+    
 	for(int i = 0; i < actionSets.size(); i++) {
 		actionSets[i].draw(window);
 	}
@@ -111,7 +116,7 @@ void Controller::processEvents() {
         // Close window : exit
         if (Event.Type == sf::Event::Closed) {
             window->Close();
-        } else if (Event.Type == sf::Event::KeyReleased) {
+        } else if (Event.Type == sf::Event::KeyPressed) {
             switch(Event.Key.Code) {
             case sf::Key::Q:
                 goals[0].goalHit();
@@ -135,23 +140,41 @@ void Controller::processEvents() {
 }
 
 void Controller::loadResources() {
-    if (!targetImg.LoadFromFile("target.png")) {
-        printf("Error loading images");
-    }
-    if (!goalImg.LoadFromFile("goal.png")) {
-        printf("Error loading images");
+    if (!targetImg.LoadFromFile("target.png") ||
+        !goalImg.LoadFromFile("goal.png") ||
+        !backgroundImg.LoadFromFile("background.png")) {
+        
+        // This should quit or throw an exception
     }
 }
 
 void Controller::initializeObjects() {
 	srand ( time(NULL) );
 
+    background.SetImage(backgroundImg);
+    
+    initializeAnimation(&animation, "Actions/", "Kick_Hit", ".jpg", 35);
+    
     addRandomSet();
     
     goals.push_back(Goal(&goalImg, 500, 0));
     goals.push_back(Goal(&goalImg, 500, 1));
     goals.push_back(Goal(&goalImg, 500, 2));
     goals.push_back(Goal(&goalImg, 500, 3));
+}
+
+void Controller::initializeAnimation(sf::Animation* animation, std::string path, 
+                                     std::string baseFile, std::string fileType, int numImgs) {
+    // So we don't have to hard code in all of the filenames
+    for (int i = 1; i < numImgs; i++) {
+        std::stringstream ss;
+        ss << i;
+        
+        sf::Image* image = new sf::Image();
+        image->LoadFromFile(path + baseFile + ss.str() + fileType);
+        animation->AddFrame(image, 1);
+    }
+    animation->SetBlendMode(sf::Blend::Multiply);
 }
 
 void Controller::addRandomSet() {
