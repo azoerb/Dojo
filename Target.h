@@ -15,5 +15,5 @@ public:
     
     void draw(sf::RenderTarget* target);
 
-	float hit(Goal* goal);
+	float hitCheck(Goal* goal);
 };

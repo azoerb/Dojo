@@ -20,7 +20,8 @@ namespace sf {
         void update();
         void draw(sf::RenderTarget* target);
         bool addFrame(sf::Image* newFrame);
+        void reset();
         void clear();
-        void init(std::string basePath, std::string fileType, int numImgs);
+        void init(std::string basePath, int numImgs);
     };
 }

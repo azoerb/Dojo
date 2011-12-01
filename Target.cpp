@@ -18,8 +18,8 @@ void Target::draw(sf::RenderTarget* target) {
     target->Draw(sprite);
 }
 
-float Target::hit(Goal* goal) {
-    float dist = abs(goal->getPosition().y - this->getPosition().y);
+float Target::hitCheck(Goal* goal) {
+    float dist = abs(goal->getPosition().y - getPosition().y);
 	if(dist <= MAX_HIT_DISTANCE) {
         return 100.0 - dist / MAX_HIT_DISTANCE * 100.0;
 	}

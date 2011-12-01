@@ -34,17 +34,16 @@ namespace sf {
         return true;
     }
     
-    void Animation::init(std::string basePath, std::string fileType, int numImgs) {
+    void Animation::init(std::string basePath, int numImgs) {
         // So we don't have to hard code in all of the filenames
-        for (int i = 1; i < numImgs; i++) {
+        for (int i = 1; i <= numImgs; i++) {
             std::stringstream ss;
             ss << i;
             
             sf::Image* image = new sf::Image();
-            image->LoadFromFile(basePath + ss.str() + fileType);
+            image->LoadFromFile(basePath + ss.str() + ".png");
             addFrame(image);
         }
-        SetBlendMode(sf::Blend::Multiply);
     }
 
     void Animation::clear() {
@@ -56,5 +55,9 @@ namespace sf {
         images.clear();
         currentFrame = 0;
         numImgs = 0;
+    }
+    
+    void Animation::reset() {
+        currentFrame = 0;
     }
 }

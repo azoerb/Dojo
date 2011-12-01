@@ -7,7 +7,6 @@ private:
     std::vector<Target> targetList;
     float accuracy;
 	int numTargets;
-	int numTargetsHit;
     
 public:
     TargetSet();
@@ -20,7 +19,7 @@ public:
     
     void addTarget(Target target);
     
-    void removeTarget(int index, bool hit = false);
+    void removeTarget(int index);
     
     float getAccuracy();
     

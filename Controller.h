@@ -15,12 +15,13 @@ private:
     sf::Image backgroundImg;
     
     sf::Sprite background;
-    Action action;
     
     std::vector<Action> basicActions;
     std::vector<Action> comboActions;
     std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
+    
+    int level;
 
     bool keyPresses[4];
     

@@ -2,7 +2,6 @@
 
 TargetSet::TargetSet() {
 	numTargets = 0;
-	numTargetsHit = 0;
     accuracy = 0.0;
 }
 
@@ -27,12 +26,8 @@ void TargetSet::addTarget(Target target) {
 	numTargets++;
 }
 
-void TargetSet::removeTarget(int index, bool hit) {
+void TargetSet::removeTarget(int index) {
     targetList.erase(targetList.begin() + index);
-
-	if(hit) {
-		numTargetsHit++;
-	}
 }
 
 float TargetSet::getAccuracy() {

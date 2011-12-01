@@ -8,6 +8,8 @@ Controller::Controller() {
     window = new sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Dojo Hero");
     window->UseVerticalSync(true);
     
+    level = 2;
+    
     loadResources();
     initializeObjects();
 }
@@ -39,19 +41,22 @@ void Controller::update() {
         
         std::vector<Target>* targets = targetSets[i].getTargets();
         for (int j = 0; j < targets->size(); j++) {
-            hit = false;
+            bool hit = false;
             
 			// Remove Target if key is hit
 			for (int k = 0; k < NUM_COLUMNS; k++) {
                 if (keyPresses[k] && targets->at(j).getColumn() == k) {
-                    float result = targets->at(j).hit(&goals[k]);
+                    float result = targets->at(j).hitCheck(&goals[k]);
                     
                     if (result == -1) {
                         targetSets[i].changeAccuracy(MISS_PENALTY);
                     } else {
                         targetSets[i].changeAccuracy(result);
-                        targetSets[i].removeTarget(j, true);
+                        targetSets[i].removeTarget(j);
                         hit = true;
+                        if (j >= targets->size()) {
+                            break;
+                        }
                     }
                 }
             }
@@ -61,8 +66,9 @@ void Controller::update() {
                 targetSets[i].removeTarget(j);
             }
 
-			// Once all of the actionSet's targets are gone
+			// Once all of the targetSet's targets are gone
             if (targets->size() == 0) {
+                printf("removing targetSet\n");
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
                
@@ -92,8 +98,7 @@ void Controller::draw() {
     window->Clear();
     
     window->Draw(background);
-    action.draw(window);
-    action.update();
+    basicActions[0].draw(window);
     
 	for(int i = 0; i < targetSets.size(); i++) {
 		targetSets[i].draw(window);
@@ -115,23 +120,33 @@ void Controller::processEvents() {
             window->Close();
         } else if (Event.Type == sf::Event::KeyPressed) {
             switch(Event.Key.Code) {
-            case sf::Key::Q:
-                goals[0].goalHit();
-                keyPresses[0] = true;
-                break;
-            case sf::Key::W:
-                goals[1].goalHit();
-                keyPresses[1] = true;
-                break;
-            case sf::Key::E:
-                goals[2].goalHit();
-                keyPresses[2] = true;
-                break;
-            case sf::Key::R:
-                goals[3].goalHit();
-                keyPresses[3] = true;
-                break;
+                case sf::Key::Q:
+                    goals[0].goalHit();
+                    keyPresses[0] = true;
+                    break;
+                case sf::Key::W:
+                    goals[1].goalHit();
+                    keyPresses[1] = true;
+                    break;
+                case sf::Key::E:
+                    goals[2].goalHit();
+                    keyPresses[2] = true;
+                    break;
+                case sf::Key::R:
+                    goals[3].goalHit();
+                    keyPresses[3] = true;
+                    break;
+                case sf::Key::T:
+                    basicActions[0].selectAnimation(ANIMATION_BLOCK);
+                    break;
+                case sf::Key::Y:
+                    basicActions[0].selectAnimation(ANIMATION_COUNTER);
+                    break;
+                case sf::Key::U:
+                    basicActions[0].selectAnimation(ANIMATION_HIT);
+                    break;
             }
+            
         }
     }
 }
@@ -146,12 +161,16 @@ void Controller::loadResources() {
 }
 
 void Controller::initializeObjects() {
-	srand ( time(NULL) );
+	srand(time(NULL));
 
     background.SetImage(backgroundImg);
     
     //
-    action.init("Actions/Kick_Hit", ".jpg", 35);
+    Action* action = new Action();
+    action->addAnimation(ANIMATION_HIT, "Actions/Kick_Hit/Kick_Hit", NUM_KICK_HIT_FRAMES);
+    action->addAnimation(ANIMATION_BLOCK, "Actions/Kick_Block/Kick_Block", NUM_KICK_BLOCK_FRAMES);
+    action->addAnimation(ANIMATION_COUNTER, "Actions/Kick_Counter/Kick_Counter", NUM_KICK_COUNTER_FRAMES);
+    basicActions.push_back(*action);
     //
     
     addRandomSet();
@@ -164,7 +183,7 @@ void Controller::initializeObjects() {
 
 void Controller::addRandomSet() {
 	int numTargets = MIN_NUM_TARGETS + rand() % (MAX_NUM_TARGETS - MIN_NUM_TARGETS);
-    int speed = MIN_TARGET_SPEED + rand() % (MAX_TARGET_SPEED - MIN_TARGET_SPEED);
+    int speed = TARGET_SPEED * level * SPEED_RATIO;
 
 	targetSets.push_back(TargetSet());
 	for(int i = 0; i < numTargets; i++) {
