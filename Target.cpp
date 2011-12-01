@@ -14,8 +14,8 @@ void Target::update(float elapsedTime) {
     sprite.SetPosition(pos.x, pos.y + elapsedTime * speed);
 }
 
-void Target::draw(sf::RenderWindow* window) {
-    window->Draw(sprite);
+void Target::draw(sf::RenderTarget* target) {
+    target->Draw(sprite);
 }
 
 float Target::hit(Goal* goal) {

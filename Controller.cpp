@@ -1,8 +1,5 @@
 #include "Controller.h"
-#include "ActionSet.h"
-#include "Goal.h"
 #include <math.h>
-#include <sstream>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -37,10 +34,10 @@ void Controller::update() {
     
     elapsedTime = window->GetFrameTime();
 
-	for (int i = 0; i < actionSets.size(); i++) {
-        actionSets[i].update(elapsedTime);
+	for (int i = 0; i < targetSets.size(); i++) {
+        targetSets[i].update(elapsedTime);
         
-        std::vector<Target>* targets = actionSets[i].getTargets();
+        std::vector<Target>* targets = targetSets[i].getTargets();
         for (int j = 0; j < targets->size(); j++) {
             hit = false;
             
@@ -50,10 +47,10 @@ void Controller::update() {
                     float result = targets->at(j).hit(&goals[k]);
                     
                     if (result == -1) {
-                        actionSets[i].changeAccuracy(MISS_PENALTY);
+                        targetSets[i].changeAccuracy(MISS_PENALTY);
                     } else {
-                        actionSets[i].changeAccuracy(result);
-                        actionSets[i].removeTarget(j, true);
+                        targetSets[i].changeAccuracy(result);
+                        targetSets[i].removeTarget(j, true);
                         hit = true;
                     }
                 }
@@ -61,13 +58,13 @@ void Controller::update() {
             
 			// Remove any off-screen Targets
             if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
-                actionSets[i].removeTarget(j);
+                targetSets[i].removeTarget(j);
             }
 
 			// Once all of the actionSet's targets are gone
             if (targets->size() == 0) {
                 // Determine accuracy and play animation
-                float accuracy = actionSets[i].getAccuracy();
+                float accuracy = targetSets[i].getAccuracy();
                
                 // TODO: Probably want to have these be dynamicaly
                 // based on difficulty level instead of static.
@@ -80,7 +77,7 @@ void Controller::update() {
                 }
                 
                 // Delete the actionSet
-                actionSets.erase(actionSets.begin() + i);
+                targetSets.erase(targetSets.begin() + i);
 				
                 // reset targets, goals
 				addRandomSet();
@@ -95,11 +92,11 @@ void Controller::draw() {
     window->Clear();
     
     window->Draw(background);
-    window->Draw(animation);
-    animation.Update();
+    action.draw(window);
+    action.update();
     
-	for(int i = 0; i < actionSets.size(); i++) {
-		actionSets[i].draw(window);
+	for(int i = 0; i < targetSets.size(); i++) {
+		targetSets[i].draw(window);
 	}
 
 	for(int i = 0; i < goals.size(); i++) {
@@ -153,7 +150,9 @@ void Controller::initializeObjects() {
 
     background.SetImage(backgroundImg);
     
-    initializeAnimation(&animation, "Actions/", "Kick_Hit", ".jpg", 35);
+    //
+    action.init("Actions/Kick_Hit", ".jpg", 35);
+    //
     
     addRandomSet();
     
@@ -163,27 +162,13 @@ void Controller::initializeObjects() {
     goals.push_back(Goal(&goalImg, 500, 3));
 }
 
-void Controller::initializeAnimation(sf::Animation* animation, std::string path, 
-                                     std::string baseFile, std::string fileType, int numImgs) {
-    // So we don't have to hard code in all of the filenames
-    for (int i = 1; i < numImgs; i++) {
-        std::stringstream ss;
-        ss << i;
-        
-        sf::Image* image = new sf::Image();
-        image->LoadFromFile(path + baseFile + ss.str() + fileType);
-        animation->AddFrame(image, 1);
-    }
-    animation->SetBlendMode(sf::Blend::Multiply);
-}
-
 void Controller::addRandomSet() {
 	int numTargets = MIN_NUM_TARGETS + rand() % (MAX_NUM_TARGETS - MIN_NUM_TARGETS);
     int speed = MIN_TARGET_SPEED + rand() % (MAX_TARGET_SPEED - MIN_TARGET_SPEED);
 
-	actionSets.push_back(ActionSet());
+	targetSets.push_back(TargetSet());
 	for(int i = 0; i < numTargets; i++) {
-		actionSets[actionSets.size() - 1].addTarget(Target(&targetImg, speed, rand() % NUM_COLUMNS, COLUMN_WIDTH * i));
+		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, rand() % NUM_COLUMNS, COLUMN_WIDTH * i));
 	}
 }
 

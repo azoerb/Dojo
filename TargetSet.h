@@ -2,21 +2,21 @@
 
 #include "Target.h"
 
-class ActionSet {
+class TargetSet {
 private:
-    std::vector<Target> targets;
+    std::vector<Target> targetList;
     float accuracy;
 	int numTargets;
 	int numTargetsHit;
     
 public:
-    ActionSet();
+    TargetSet();
     
     std::vector<Target>* getTargets();
     
     void update(float elapsedTime);
     
-    void draw(sf::RenderWindow* window);
+    void draw(sf::RenderTarget* target);
     
     void addTarget(Target target);
     

@@ -1,12 +1,10 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include "Animation.h"
-
-#define vec2 sf::Vector2f
-
-class ActionSet;
-class Goal;
+#include "Action.h"
+#include "TargetSet.h"
+#include "Goal.h"
+#include <SFML/Graphics.hpp>
 
 class Controller {
 private:
@@ -17,9 +15,11 @@ private:
     sf::Image backgroundImg;
     
     sf::Sprite background;
-    sf::Animation animation;
+    Action action;
     
-    std::vector<ActionSet> actionSets;
+    std::vector<Action> basicActions;
+    std::vector<Action> comboActions;
+    std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
 
     bool keyPresses[4];
@@ -36,8 +36,6 @@ public:
     void processEvents();
     void loadResources();
     void initializeObjects();
-    void initializeAnimation(sf::Animation* animation, std::string path, 
-                             std::string baseFile, std::string fileType, int numImgs);
 	void addRandomSet();
     void randomizeGoals();
 };
