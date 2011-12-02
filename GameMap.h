@@ -2,7 +2,7 @@
 #define GUARD_gameMap_h
 
 #include <vector>
-#include 'Location.h'
+#include "Location.h"
 
 class GameMap {
 private:
@@ -24,7 +24,9 @@ public:
     int toggleEvent(int locationID);
 
 	// need to be able to add locations
-	std::vector<Location
+	void addLocation(Location loc);
+
+	// 
 
 private:
 
