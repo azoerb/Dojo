@@ -11,7 +11,7 @@ private:
 public:
     Goal(sf::Image* img, int goalPosition, int column);
     
-    void draw(sf::RenderWindow* window);
+    void draw(sf::RenderTarget* target);
     
     void goalHit();
 };

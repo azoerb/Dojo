@@ -13,7 +13,7 @@ public:
     
     void update(float elapsedTime);
     
-    void draw(sf::RenderWindow* window);
+    void draw(sf::RenderTarget* target);
 
-	float hit(Goal* goal);
+	float hitCheck(Goal* goal);
 };

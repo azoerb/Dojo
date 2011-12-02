@@ -1,11 +1,10 @@
 #pragma once
 
+#include "Animation.h"
+#include "Action.h"
+#include "TargetSet.h"
+#include "Goal.h"
 #include <SFML/Graphics.hpp>
-
-#define vec2 sf::Vector2f
-
-class ActionSet;
-class Goal;
 
 class Controller {
 private:
@@ -13,9 +12,16 @@ private:
     
     sf::Image targetImg;
     sf::Image goalImg;
+    sf::Image backgroundImg;
     
-    std::vector<ActionSet> actionSets;
+    sf::Sprite background;
+    
+    std::vector<Action> basicActions;
+    std::vector<Action> comboActions;
+    std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
+    
+    int level;
 
     bool keyPresses[4];
     
