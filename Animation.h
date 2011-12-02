@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Constants.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <sstream>

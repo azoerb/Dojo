@@ -98,6 +98,7 @@ void Controller::draw() {
     window->Clear();
     
     window->Draw(background);
+    //idleAnimation.draw(window);
     basicActions[0].draw(window);
     
 	for(int i = 0; i < targetSets.size(); i++) {
@@ -171,6 +172,8 @@ void Controller::initializeObjects() {
     action->addAnimation(ANIMATION_BLOCK, "Actions/Kick_Block/Kick_Block", NUM_KICK_BLOCK_FRAMES);
     action->addAnimation(ANIMATION_COUNTER, "Actions/Kick_Counter/Kick_Counter", NUM_KICK_COUNTER_FRAMES);
     basicActions.push_back(*action);
+    
+    idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
     //
     
     addRandomSet();
