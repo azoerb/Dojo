@@ -16,7 +16,6 @@ void Action::selectAnimation(AnimationType current) {
 
 void Action::draw(sf::RenderTarget* target) {
     animations[currentAnimation].draw(target);
-    update();
 }
 
 void Action::update() {
