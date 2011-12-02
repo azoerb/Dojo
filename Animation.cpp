@@ -12,15 +12,16 @@ namespace sf {
     void Animation::update() {
         currentFrame++;
 
-        if (currentFrame >= images.size()) {
+        if (currentFrame >= images.size() * NUM_PASSES) {
             currentFrame = 0;
         }
         
-        SetImage(*images.at(currentFrame));
+        SetImage(*images.at(currentFrame / NUM_PASSES));
     }
 
     void Animation::draw(sf::RenderTarget* target) {
         target->Draw(*this);
+        update();
     }
 
     bool Animation::addFrame(sf::Image* newFrame) {

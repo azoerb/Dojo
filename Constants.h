@@ -17,6 +17,8 @@
 #define HIT_RATIO 0.3
 
 // Action animation constants
+#define NUM_PASSES 3
+#define NUM_IDLE_FRAMES 5
 #define NUM_KICK_HIT_FRAMES 35
 #define NUM_KICK_BLOCK_FRAMES 30
 #define NUM_KICK_COUNTER_FRAMES 44
