@@ -17,12 +17,14 @@ private:
     sf::Sprite background;
     
     sf::Animation idleAnimation;
-    std::vector<Action> basicActions;
-    std::vector<Action> comboActions;
+    std::vector<Action*> basicActions;
+    std::vector<Action*> comboActions;
     std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
     
     int level;
+    int currentAnimation;
+    int currentAnimationType;
 
     bool keyPresses[4];
     
