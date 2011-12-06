@@ -20,7 +20,6 @@ void Action::selectAnimation(AnimationType current) {
 
 void Action::selectAnimation(int current) {
     animations[currentType].reset();
-    
     currentType = (AnimationType) current;
 }
 
@@ -30,4 +29,8 @@ void Action::draw(sf::RenderTarget* target) {
 
 void Action::update() {
     animations[currentType].update();
+}
+
+int Action::getNumAnimationFrames() {
+    return animations[currentType].getNumFrames();
 }

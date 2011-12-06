@@ -24,5 +24,6 @@ namespace sf {
         void reset();
         void clear();
         void init(std::string basePath, int numImgs);
+        int getNumFrames();
     };
 }

@@ -10,6 +10,7 @@ Controller::Controller() {
     
     currentAnimation = 0;
     level = 2;
+	numActionFrames = 0;
     
     loadResources();
     initializeObjects();
@@ -34,7 +35,12 @@ void Controller::update() {
     }
 
     processEvents();
-    
+
+	// use idle animation current animation is complete
+	if(numActionFrames > 0) {
+		numActionFrames--;
+	}
+
     elapsedTime = window->GetFrameTime();
 
 	for (int i = 0; i < targetSets.size(); i++) {
@@ -72,14 +78,23 @@ void Controller::update() {
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
                
+                currentAnimation++;
+				currentAnimation %= basicActions.size();
+
                 // TODO: Probably want to have these be dynamicaly
                 // based on difficulty level instead of static.
                 if (accuracy > 80) {
                     printf("Good\n");
+					basicActions[currentAnimation]->selectAnimation(ANIMATION_HIT);
+                    numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
                 } else if (accuracy > 40) {
                     printf("OK\n");
+					basicActions[currentAnimation]->selectAnimation(ANIMATION_BLOCK);
+                    numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
                 } else {
                     printf("Bad\n");
+					basicActions[currentAnimation]->selectAnimation(ANIMATION_COUNTER);
+                    numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
                 }
                 
                 // Delete the actionSet
@@ -96,10 +111,14 @@ void Controller::update() {
 
 void Controller::draw() {
     window->Clear();
-    
+
     window->Draw(background);
-    //idleAnimation.draw(window);
-    basicActions[currentAnimation]->draw(window);
+    
+	if(numActionFrames > 0) {
+		basicActions[currentAnimation]->draw(window);
+	} else {
+		idleAnimation.draw(window);
+	}
     
 	for(int i = 0; i < targetSets.size(); i++) {
 		targetSets[i].draw(window);

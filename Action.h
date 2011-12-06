@@ -26,4 +26,5 @@ public:
     void selectAnimation(int current);
     void draw(sf::RenderTarget* target);
     void update();
+    int getNumAnimationFrames();
 };

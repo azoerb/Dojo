@@ -65,4 +65,8 @@ namespace sf {
     void Animation::reset() {
         currentFrame = 0;
     }
+
+    int Animation::getNumFrames() {
+        return images.size() * NUM_PASSES;
+    }
 }

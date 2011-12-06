@@ -26,6 +26,8 @@ private:
     int currentAnimation;
     int currentAnimationType;
 
+	int numActionFrames;
+
     bool keyPresses[4];
     
     float elapsedTime;
