@@ -8,6 +8,7 @@ Controller::Controller() {
     window = new sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Dojo Hero");
     window->UseVerticalSync(true);
     
+    currentAnimation = 0;
     level = 2;
     
     loadResources();
@@ -68,7 +69,6 @@ void Controller::update() {
 
 			// Once all of the targetSet's targets are gone
             if (targets->size() == 0) {
-                printf("removing targetSet\n");
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
                
@@ -99,7 +99,7 @@ void Controller::draw() {
     
     window->Draw(background);
     //idleAnimation.draw(window);
-    basicActions[0].draw(window);
+    basicActions[currentAnimation]->draw(window);
     
 	for(int i = 0; i < targetSets.size(); i++) {
 		targetSets[i].draw(window);
@@ -138,13 +138,13 @@ void Controller::processEvents() {
                     keyPresses[3] = true;
                     break;
                 case sf::Key::T:
-                    basicActions[0].selectAnimation(ANIMATION_BLOCK);
+                    currentAnimationType++;
+                    currentAnimationType %= NUM_ANIMATION_TYPES;
+                    basicActions[currentAnimation]->selectAnimation(currentAnimationType);
                     break;
                 case sf::Key::Y:
-                    basicActions[0].selectAnimation(ANIMATION_COUNTER);
-                    break;
-                case sf::Key::U:
-                    basicActions[0].selectAnimation(ANIMATION_HIT);
+                    currentAnimation++;
+                    currentAnimation %= basicActions.size();
                     break;
             }
             
@@ -158,6 +158,7 @@ void Controller::loadResources() {
         !backgroundImg.LoadFromFile("background.png")) {
         
         // This should quit or throw an exception
+        printf("Error loading resources - controller\n");
     }
 }
 
@@ -166,15 +167,22 @@ void Controller::initializeObjects() {
 
     background.SetImage(backgroundImg);
     
-    //
-    Action* action = new Action();
-    action->addAnimation(ANIMATION_HIT, "Actions/Kick_Hit/Kick_Hit", NUM_KICK_HIT_FRAMES);
-    action->addAnimation(ANIMATION_BLOCK, "Actions/Kick_Block/Kick_Block", NUM_KICK_BLOCK_FRAMES);
-    action->addAnimation(ANIMATION_COUNTER, "Actions/Kick_Counter/Kick_Counter", NUM_KICK_COUNTER_FRAMES);
-    basicActions.push_back(*action);
+    // Add Kick animations
+    Action* kick = new Action();
+    kick->addAnimation(ANIMATION_HIT, "Actions/Kick_Hit/Kick_Hit", NUM_KICK_HIT_FRAMES);
+    kick->addAnimation(ANIMATION_BLOCK, "Actions/Kick_Block/Kick_Block", NUM_KICK_BLOCK_FRAMES);
+    kick->addAnimation(ANIMATION_COUNTER, "Actions/Kick_Counter/Kick_Counter", NUM_KICK_COUNTER_FRAMES);
+    basicActions.push_back(kick);
     
+    // Add Punch animations
+    Action* punch = new Action();
+    punch->addAnimation(ANIMATION_HIT, "Actions/Punch_Hit/Punch_Hit", NUM_PUNCH_HIT_FRAMES);
+    punch->addAnimation(ANIMATION_BLOCK, "Actions/Punch_Block/Punch_Block", NUM_PUNCH_BLOCK_FRAMES);
+    punch->addAnimation(ANIMATION_COUNTER, "Actions/Punch_Counter/Punch_Counter", NUM_PUNCH_COUNTER_FRAMES);
+    basicActions.push_back(punch);
+    
+    // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
-    //
     
     addRandomSet();
     

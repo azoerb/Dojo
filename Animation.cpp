@@ -2,10 +2,13 @@
 
 namespace sf {
     Animation::Animation() {
-        clear();
+        numImgs = 0;
+        currentFrame = 0;
+        images.clear();
     }
 
     Animation::~Animation() {
+        printf("~Animation()\n");
         clear();
     }
 
@@ -15,7 +18,7 @@ namespace sf {
         if (currentFrame >= images.size() * NUM_PASSES) {
             currentFrame = 0;
         }
-        
+                
         SetImage(*images.at(currentFrame / NUM_PASSES));
     }
 
@@ -28,8 +31,8 @@ namespace sf {
         images.push_back(newFrame);
         
         if (images.size() == 1) {
-            SetSubRect(sf::Rect<int>(0,0,newFrame->GetWidth(), newFrame->GetHeight()));
-            SetImage(*images.at(currentFrame));
+            SetSubRect(sf::Rect<int>(0, 0, newFrame->GetWidth(), newFrame->GetHeight()));
+            SetImage(*images.at(0));
         }
         numImgs++;
         return true;
@@ -42,20 +45,21 @@ namespace sf {
             ss << i;
             
             sf::Image* image = new sf::Image();
-            image->LoadFromFile(basePath + ss.str() + ".png");
-            addFrame(image);
+            if (!image->LoadFromFile(basePath + ss.str() + ".png")) {
+                printf("Error loading resource - init\n");
+            }
+            if (!addFrame(image)) {
+                printf("Error adding frame to animation - init\n");
+            }
         }
     }
 
     void Animation::clear() {
+        printf("Animation::Clear()\n");
         // Make sure we free up the images' memory
         for (int i = 0; i < numImgs; i++) {
-            if (images[i]) { delete images[i]; }
+            if (images.at(i)) { delete images.at(i); }
         }
-        
-        images.clear();
-        currentFrame = 0;
-        numImgs = 0;
     }
     
     void Animation::reset() {

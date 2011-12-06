@@ -1,7 +1,11 @@
 #include "Action.h"
 
 Action::Action() {
-    currentAnimation = ANIMATION_HIT;
+    currentType = ANIMATION_HIT;
+}
+
+Action::~Action() {
+    printf("~Action()\n");
 }
 
 void Action::addAnimation(AnimationType type, std::string basePath, int numImgs) {
@@ -10,14 +14,20 @@ void Action::addAnimation(AnimationType type, std::string basePath, int numImgs)
 
 void Action::selectAnimation(AnimationType current) {
     // Reset the current animation back to it's start
-    animations[currentAnimation].reset();
-    currentAnimation = current;
+    animations[currentType].reset();
+    currentType = current;
+}
+
+void Action::selectAnimation(int current) {
+    animations[currentType].reset();
+    
+    currentType = (AnimationType) current;
 }
 
 void Action::draw(sf::RenderTarget* target) {
-    animations[currentAnimation].draw(target);
+    animations[currentType].draw(target);
 }
 
 void Action::update() {
-    animations[currentAnimation].update();
+    animations[currentType].update();
 }
