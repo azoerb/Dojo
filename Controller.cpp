@@ -200,6 +200,46 @@ void Controller::initializeObjects() {
     punch->addAnimation(ANIMATION_COUNTER, "Actions/Punch_Counter/Punch_Counter", NUM_PUNCH_COUNTER_FRAMES);
     basicActions.push_back(punch);
     
+    // Add Headbutt animations
+    Action* headbutt = new Action();
+    headbutt->addAnimation(ANIMATION_HIT, "Actions/Headbutt_Hit/Headbutt_Hit", NUM_HEADBUTT_HIT_FRAMES);
+    headbutt->addAnimation(ANIMATION_BLOCK, "Actions/Headbutt_Block/Headbutt_Block", NUM_HEADBUTT_BLOCK_FRAMES);
+    headbutt->addAnimation(ANIMATION_COUNTER, "Actions/Headbutt_Counter/Headbutt_Counter", NUM_HEADBUTT_COUNTER_FRAMES);
+    basicActions.push_back(headbutt);
+
+
+    ComboAction* punchPunch = new ComboAction();
+    punchPunch->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
+    comboActions.push_back(punchPunch);
+    
+    ComboAction* punchKick = new ComboAction();
+    punchKick->addAnimation("ComboActions/Punch_Kick_Combo/Punch_Kick_Combo", NUM_PUNCH_KICK_FRAMES);
+    comboActions.push_back(punchKick);
+    
+    ComboAction* punchHeadbutt = new ComboAction();
+    punchHeadbutt->addAnimation("ComboActions/Punch_Headbutt_Combo/Punch_Headbutt_Combo", NUM_PUNCH_HEADBUTT_FRAMES);
+    comboActions.push_back(punchHeadbutt);
+    
+    ComboAction* kickPunch = new ComboAction();
+    kickPunch->addAnimation("ComboActions/Kick_Punch_Combo/Kick_Punch_Combo", NUM_KICK_PUNCH_FRAMES);
+    comboActions.push_back(kickPunch);
+
+    ComboAction* kickKick = new ComboAction();
+    kickKick->addAnimation("ComboActions/Kick_Kick_Combo/Kick_Kick_Combo", NUM_KICK_KICK_FRAMES);
+    comboActions.push_back(kickKick);
+    
+    ComboAction* kickHeadbutt = new ComboAction();
+    kickHeadbutt->addAnimation("ComboActions/Kick_Headbutt_Combo/Kick_Headbutt_Combo", NUM_KICK_HEADBUTT_FRAMES);
+    comboActions.push_back(kickHeadbutt);
+    
+    ComboAction* headbuttPunch = new ComboAction();
+    headbuttPunch->addAnimation("ComboActions/Headbutt_Punch_Combo/Headbutt_Punch_Combo", NUM_HEADBUTT_PUNCH_FRAMES);
+    comboActions.push_back(headbuttPunch);
+    
+    ComboAction* headbuttKick = new ComboAction();
+    headbuttKick->addAnimation("ComboActions/Headbutt_Kick_Combo/Headbutt_Kick_Combo", NUM_HEADBUTT_KICK_FRAMES);
+    comboActions.push_back(headbuttKick);
+    
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
     

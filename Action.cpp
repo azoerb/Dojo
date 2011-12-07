@@ -4,9 +4,7 @@ Action::Action() {
     currentType = ANIMATION_HIT;
 }
 
-Action::~Action() {
-    printf("~Action()\n");
-}
+Action::~Action() {}
 
 void Action::addAnimation(AnimationType type, std::string basePath, int numImgs) {
     animations[type].init(basePath, numImgs);

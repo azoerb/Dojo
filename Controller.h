@@ -2,6 +2,7 @@
 
 #include "Animation.h"
 #include "Action.h"
+#include "ComboAction.h"
 #include "TargetSet.h"
 #include "Goal.h"
 #include <SFML/Graphics.hpp>
@@ -18,7 +19,7 @@ private:
     
     sf::Animation idleAnimation;
     std::vector<Action*> basicActions;
-    std::vector<Action*> comboActions;
+    std::vector<ComboAction*> comboActions;
     std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
     

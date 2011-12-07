@@ -5,6 +5,7 @@ namespace sf {
         numImgs = 0;
         currentFrame = 0;
         images.clear();
+        SetPosition(50, 150);
     }
 
     Animation::~Animation() {
