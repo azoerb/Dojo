@@ -10,4 +10,5 @@ private:
 public:
     Player(float health);
     std::vector<Action> getPossibleActions();
+    void drawHealthBar(sf::Sprite* star, sf::RenderTarget* target);
 };
