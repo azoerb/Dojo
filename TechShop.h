@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "Technique.h"
+#include "Controller.h"
 #include <list>
 using namespace std;
 
@@ -23,6 +24,12 @@ private:
 	// i guess the shop is a bank?
 	int cash;
 
+	// images that the shop will wind up using that we only want to load once
+	sf::Image tab;
+	sf::Image bg1;
+	sf::Image bg2;
+	sf::Image bg3;
+
 public:
 
 	TechShop();
@@ -30,6 +37,10 @@ public:
 	TechShop(std::vector<Technique> listOfTechs);
 
 	~TechShop();
+
+	void setSprite() {
+
+	}
 
 	// add the amount of cash desired 
 	void addCash(int amount);
@@ -45,7 +56,7 @@ public:
 	std::vector<Technique> getPage(int level);
 
 	// draws the shop on the screen
-	void drawShop();
+	void drawShop(sf::RenderWindow* window);
 
 	// displays current level
 	void switchScreen(int level);

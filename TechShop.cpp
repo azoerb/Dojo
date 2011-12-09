@@ -2,11 +2,19 @@
 
 TechShop::TechShop() {
 	cash = 100;
+	tab.LoadFromFile("Shop/tab.png");
+	bg1.LoadFromFile("Shop/bg1.png");
+	bg2.LoadFromFile("Shop/bg2.png");
+	bg3.LoadFromFile("Shop/bg3.png");
 }
 
 TechShop::TechShop(std::vector<Technique> listOfTechs) {
 	techs = listOfTechs;
 	cash = 100;
+	tab.LoadFromFile("Shop/tab.png");
+	bg1.LoadFromFile("Shop/bg1.png");
+	bg2.LoadFromFile("Shop/bg2.png");
+	bg3.LoadFromFile("Shop/bg3.png");
 }
 
 TechShop::~TechShop() {
@@ -67,12 +75,53 @@ std::vector<Technique> TechShop::getPage(int level) {
 }
 
 // draws the shop on the screen
-void TechShop::drawShop() {
+void TechShop::drawShop(sf::RenderWindow* window) {
 	if (currType == BEGINNER) {
-		
+		// draw the tab
+		sf::Sprite sp_tab;
+		sp_tab.SetImage(tab);
+		sp_tab.SetPosition(0.0, 0.0);
+		window->Draw(sp_tab);
+
+		// draw the correct background
+		sf::Sprite sp_bg;
+		sp_tab.SetImage(bg1);
+		sp_tab.SetPosition(0.0, 70.0);
+		window->Draw(sp_bg);
+
+		// overlay the techniques onto the background
+
+
 	} else if (currType == INTERMEDIATE) {
+		// draw the tab
+		sf::Sprite sp_tab;
+		sp_tab.SetImage(tab);
+		sp_tab.SetPosition(0.0, 0.0);
+		window->Draw(sp_tab);
+
+		// draw the correct background
+		sf::Sprite sp_bg;
+		sp_tab.SetImage(bg2);
+		sp_tab.SetPosition(0.0, 70.0);
+		window->Draw(sp_bg);
+
+		// overlay the techniques onto the background
+
 
 	} else if (currType == ADVANCED) {
+		// draw the tab
+		sf::Sprite sp_tab;
+		sp_tab.SetImage(tab);
+		sp_tab.SetPosition(0.0, 0.0);
+		window->Draw(sp_tab);
+
+		// draw the correct background
+		sf::Sprite sp_bg;
+		sp_tab.SetImage(bg3);
+		sp_tab.SetPosition(0.0, 70.0);
+		window->Draw(sp_bg);
+
+		// overlay the techniques onto the background
 
 	}
 }
