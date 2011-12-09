@@ -25,7 +25,8 @@ Controller::Controller() {
     initializeObjects();
 
     window->Clear(sf::Color(255,255,255));
-    displayMessage("Press Any Key to Start.", 150, 200, window);
+    displayMessage("Use QWER to Play", 200, 200, window);
+    displayMessage("Press Any Key to Start.", 150, 300, window);
     window->Display();
 }
 
@@ -148,10 +149,10 @@ bool Controller::update() {
 
             currentAnimation = rand() % basicActions.size();
 
-            if (targetSets[i].getNumMisses() == 1) {
+            if (targetSets[i].getNumMisses() == 1 || targetSets[i].getNumMisses() == 2) {
                 printf("OK\n");
                 currentAnimationType = ANIMATION_BLOCK;
-            } else if(targetSets[i].getNumMisses() > 1) {
+            } else if(targetSets[i].getNumMisses() > 2) {
                 printf("Bad\n");
                 currentAnimationType = ANIMATION_COUNTER;
             } else {
