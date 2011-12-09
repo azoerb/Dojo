@@ -5,11 +5,11 @@
 #define NUM_COLUMNS 4
 
 // TargetSet constants
-#define MIN_NUM_TARGETS 4
-#define MAX_NUM_TARGETS 10
+#define MIN_NUM_TARGETS 3
+#define MAX_NUM_TARGETS 33
 #define TARGET_SPEED 300
 #define SPEED_RATIO .5
-#define MAX_HIT_DISTANCE 50
+#define MAX_HIT_DISTANCE 32
 #define MISS_PENALTY -10
 #define SPEED_START 150
 #define SPEED_INCREASE 50

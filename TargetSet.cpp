@@ -3,6 +3,7 @@
 TargetSet::TargetSet() {
 	numTargets = 0;
     accuracy = 0.0;
+    numMisses = 0;
 }
 
 void TargetSet::update(float elapsedTime) {
@@ -36,4 +37,12 @@ float TargetSet::getAccuracy() {
 
 void TargetSet::changeAccuracy(float delta) {
     accuracy += delta;
+}
+
+void TargetSet::addMiss() {
+    numMisses++;
+}
+
+int TargetSet::getNumMisses() {
+    return numMisses;
 }
