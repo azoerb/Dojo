@@ -52,7 +52,11 @@ void Controller::mainLoop() {
                 draw();
             }
         } else {
+#if defined(WIN_32)
             Sleep(10);
+#elif defined(UNIX)
+            usleep(10);
+#endif
         }
     }
 }
