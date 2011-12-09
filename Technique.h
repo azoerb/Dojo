@@ -14,24 +14,33 @@ class Technique {
  * level - beginner = 1, intermediate = 2, advanced = 3 (beginner by default)
  * unlocked - boolean about whether or not technique is unlocked
  */
-protected:
+private:
 	char* name;
+	int id;
 	int cost;
 	int level;
 	bool unlocked;
 public:
 	// default constructor
-	Technique();
+	Technique(int id);
 	// constructor
-	Technique(char* nam, int cos, int lev, bool unl);
+	Technique(char* nam, int cos, int lev, bool unl, int id);
+	// destructor
+	~Technique();
 
 	/* Methods */
+
+	// get the id
+	int getId();
+
+	// get the level
+	int getLevel();
 	
 	// unlock the technique, returns the cost of the technique
-	int unlock(char* nam);
+	int unlock();
 
 	// is it unlocked?
-	bool unlocked();
+	bool isUnlocked();
 
 	// how much does it cost?
 	int getCost();
