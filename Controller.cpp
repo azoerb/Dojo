@@ -102,6 +102,11 @@ bool Controller::update() {
         elapsedTime = .1;
     }
 
+    // set to true when we encounter the first target in the respective column
+    // to avoid checking far away targets
+    // this fixes the problem of "missing" all targets in the column
+    bool found[4] = {false, false, false, false};
+
 	for (int i = 0; i < targetSets.size(); i++) {
         targetSets[i].update(elapsedTime);
         
@@ -110,70 +115,78 @@ bool Controller::update() {
             bool hit = false;
             
 			// Remove Target if key is hit
-			for (int k = 0; k < NUM_COLUMNS; k++) {
-                if (keyPresses[k] && targets->at(j).getColumn() == k) {
-                    float result = targets->at(j).hitCheck(&goals[k]);
-                    
-                    if (result == -1) {
-                        targetSets[i].changeAccuracy(MISS_PENALTY);
-                    } else {
-                        targetSets[i].changeAccuracy(result);
-                        targetSets[i].removeTarget(j);
-                        hit = true;
-                        if (j >= targets->size()) {
-                            break;
-                        }
+            int col = targets->at(j).getColumn();
+            if (keyPresses[col] && !found[col]) {
+                float result = targets->at(j).hitCheck(&goals[col]);
+                if (result == -1) {
+                    if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
+                        found[col] = true;
+                    }
+                    targetSets[i].addMiss();
+                } else {
+                    found[col] = true;
+                    targetSets[i].changeAccuracy(result);
+                    targetSets[i].removeTarget(j);
+                    hit = true;
+                    if (j >= targets->size()) {
+                        break;
                     }
                 }
             }
             
 			// Remove any off-screen Targets
             if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
+                targetSets[i].addMiss();
                 targetSets[i].removeTarget(j);
             }
+        }
 
-			// Once all of the targetSet's targets are gone
-            if (targets->size() == 0) {
-                // Determine accuracy and play animation
-                float accuracy = targetSets[i].getAccuracy();
-               
-                currentAnimation = rand() % basicActions.size();
+        // Once all of the targetSet's targets are gone
+        if (targets->size() == 0) {
+            // Determine accuracy and play animation
+            float accuracy = targetSets[i].getAccuracy();
 
+            currentAnimation = rand() % basicActions.size();
+
+            if (targetSets[i].getNumMisses() == 1) {
+                printf("OK\n");
+                currentAnimationType = ANIMATION_BLOCK;
+            } else if(targetSets[i].getNumMisses() > 1) {
+                printf("Bad\n");
+                currentAnimationType = ANIMATION_COUNTER;
+            } else {
                 // TODO: Probably want to have these be dynamicaly
                 // based on difficulty level instead of static.
-                if (accuracy > 80) {
+                if (accuracy > 75) {
                     printf("Good\n");
                     currentAnimationType = ANIMATION_HIT;
-                } else if (accuracy > 40) {
+                } else {
                     printf("OK\n");
                     currentAnimationType = ANIMATION_BLOCK;
-                } else {
-                    printf("Bad\n");
-                    currentAnimationType = ANIMATION_COUNTER;
                 }
+            }
                 
-				basicActions[currentAnimation]->selectAnimation(currentAnimationType);
-                numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
+			basicActions[currentAnimation]->selectAnimation(currentAnimationType);
+            numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
 
-                // update health here when player/enemy are about to die
-                switch(currentAnimationType) {
-                case ANIMATION_HIT:
-                    if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
-                        enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
-                    break;
-                case ANIMATION_COUNTER:
-                    if(player->getHealth() <= BASIC_ACTION_DAMAGE)
-                        player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
-                    break;
-                }
+            // update health here when player/enemy are about to die
+            switch(currentAnimationType) {
+            case ANIMATION_HIT:
+                if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
+                    enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                break;
+            case ANIMATION_COUNTER:
+                if(player->getHealth() <= BASIC_ACTION_DAMAGE)
+                    player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
+                break;
+            }
 
-                // Delete the actionSet
-                targetSets.erase(targetSets.begin() + i);
+            // Delete the actionSet
+            targetSets.erase(targetSets.begin() + i);
 				
-                // reset targets, goals
-				addRandomSet();
-			}
-        }
+            // reset targets, goals
+			addRandomSet();
+		}
     }
     return true;
 }
@@ -249,6 +262,7 @@ void Controller::processEvents() {
             if(gameStatus == GAME_WAIT_FOR_INPUT) {
                 gameStatus = GAME_PLAY;
                 targetSets.clear();
+                keyPresses[0] = keyPresses[1] = keyPresses[2] = keyPresses[3] = false;
                 addRandomSet();
             }
         }
@@ -340,13 +354,36 @@ void Controller::initializeObjects() {
 }
 
 void Controller::addRandomSet() {
-	int numTargets = MIN_NUM_TARGETS + rand() % (MAX_NUM_TARGETS - MIN_NUM_TARGETS);
+	//int numTargets = MIN_NUM_TARGETS + rand() % (MAX_NUM_TARGETS - MIN_NUM_TARGETS);
     //int speed = TARGET_SPEED * level * SPEED_RATIO;
+	int numTargets = MIN_NUM_TARGETS + level + rand() % (2*level);
+    if(numTargets > MAX_NUM_TARGETS) {
+        numTargets = MAX_NUM_TARGETS;
+    }
     int speed = SPEED_START + (level * SPEED_INCREASE);
 
 	targetSets.push_back(TargetSet());
+    int y = 0;
 	for(int i = 0; i < numTargets; i++) {
-		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, rand() % NUM_COLUMNS, COLUMN_WIDTH * i));
+        int col = rand() % NUM_COLUMNS;
+		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, col, y));
+
+        // add doubles, triples, quadrouples
+        /*
+        if(level > 2 && rand() % 10 < 2) {
+            targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+1) % NUM_COLUMNS, y));
+
+            if(level > 4 && rand() % 10 < 5) {
+                targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+2) % NUM_COLUMNS, y));
+
+                if(level > 6 && rand() % 10 < 5) {
+                    targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+3) % NUM_COLUMNS, y));
+                }
+            }
+        }
+        */
+
+        y += COLUMN_WIDTH;
 	}
 }
 

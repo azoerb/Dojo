@@ -7,6 +7,7 @@ private:
     std::vector<Target> targetList;
     float accuracy;
 	int numTargets;
+    int numMisses;
     
 public:
     TargetSet();
@@ -24,4 +25,8 @@ public:
     float getAccuracy();
     
     void changeAccuracy(float delta);
+
+    void addMiss();
+
+    int getNumMisses();
 };
