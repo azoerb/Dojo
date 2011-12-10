@@ -45,7 +45,7 @@ private:
 	int numActionFrames;
     int gameStatus;
 
-    bool keyPresses[4];
+    bool keyPresses[NUM_COLUMNS];
     
     float elapsedTime;
 

@@ -10,7 +10,7 @@
 #define TARGET_SPEED 300
 #define SPEED_RATIO .5
 #define MAX_HIT_DISTANCE 32
-#define MISS_PENALTY -10
+#define MISS_PENALTY -5
 #define SPEED_START 150
 #define SPEED_INCREASE 50
 

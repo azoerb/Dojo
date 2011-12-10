@@ -235,25 +235,34 @@ void Controller::processEvents() {
                     keyPresses[0] = true;
                     break;
                 case sf::Key::W:
-                    goals[1].goalHit();
-                    keyPresses[1] = true;
+                    if (NUM_COLUMNS >= 2) {
+                        goals[1].goalHit();
+                        keyPresses[1] = true;
+                    }
                     break;
                 case sf::Key::E:
-                    goals[2].goalHit();
-                    keyPresses[2] = true;
+                    if (NUM_COLUMNS >= 3) {
+                        goals[2].goalHit();
+                        keyPresses[2] = true;
+                    }
                     break;
                 case sf::Key::R:
-                    goals[3].goalHit();
-                    keyPresses[3] = true;
+                    if (NUM_COLUMNS >= 4) {
+                        goals[3].goalHit();
+                        keyPresses[3] = true;
+                    }
                     break;
                 case sf::Key::T:
-                    currentAnimationType++;
-                    currentAnimationType %= NUM_ANIMATION_TYPES;
-                    basicActions[currentAnimation]->selectAnimation(currentAnimationType);
+                    if (NUM_COLUMNS >= 5) {
+                        goals[4].goalHit();
+                        keyPresses[4] = true;
+                    }
                     break;
                 case sf::Key::Y:
-                    currentAnimation++;
-                    currentAnimation %= basicActions.size();
+                    if (NUM_COLUMNS >= 6) {
+                        goals[5].goalHit();
+                        keyPresses[5] = true;
+                    }
                     break;
                 case sf::Key::Escape:
                     if(gameStatus == GAME_PAUSE) {
@@ -352,10 +361,9 @@ void Controller::initializeObjects() {
 
     // Death animation?
     
-    goals.push_back(Goal(&goalImg, 528, 0));
-    goals.push_back(Goal(&goalImg, 528, 1));
-    goals.push_back(Goal(&goalImg, 528, 2));
-    goals.push_back(Goal(&goalImg, 528, 3));
+    for (int i = 0; i < NUM_COLUMNS; i++) {
+        goals.push_back(Goal(&goalImg, 528, i));
+    }
 }
 
 void Controller::addRandomSet() {
