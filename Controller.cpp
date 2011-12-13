@@ -126,6 +126,8 @@ bool Controller::update() {
                 if (result == -1) {
                     if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
                         found[col] = true;
+						targetSets[i].addMiss();
+						goals[col].goalMiss();
                     }
                 } else {
                     found[col] = true;
@@ -229,6 +231,8 @@ void Controller::draw() {
 		goals[i].draw(window);
 	}
 
+	displayMessage("You", 20, 30, window, 20, sf::Color(255,255,255));
+	displayMessage("Enemy", 730, 30, window, 20, sf::Color(255,255,255));
     player->drawHealthBar(&star, window);
     enemy->drawHealthBar(&star, window);
 
