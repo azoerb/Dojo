@@ -9,9 +9,13 @@ std::vector<Action> Player::getPossibleActions() {
 }
 
 void Player::drawHealthBar(sf::Sprite* star, sf::RenderTarget* target) {
-    int i;
-    for(i = 0; 10*i < this->health; i++) {
-        star->SetPosition(75 + 30*i, 60);
+    for(int i = 0; 10*i < this->health && i < 10; i++) {
+        star->SetPosition(75 + 30*i, 30);
+        target->Draw(*star);
+    }
+
+	for(int i = 10; 10*i < this->health && i < 20; i++) {
+        star->SetPosition(75 + 30*(i-10), 60);
         target->Draw(*star);
     }
 }

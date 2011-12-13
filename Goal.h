@@ -6,6 +6,8 @@
 class Goal : public ColumnObject {
 private:
     int hitFrames;
+	int okFrames;
+	int rotateFrames;
     float newSize;
     
 public:
@@ -13,5 +15,7 @@ public:
     
     void draw(sf::RenderTarget* target);
     
-    void goalHit();
+    void goalHit(bool good);
+
+    void goalMiss();
 };

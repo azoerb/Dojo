@@ -127,12 +127,18 @@ bool Controller::update() {
                     if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
                         found[col] = true;
                     }
-                    targetSets[i].addMiss();
                 } else {
                     found[col] = true;
                     targetSets[i].changeAccuracy(result);
                     targetSets[i].removeTarget(j);
                     hit = true;
+
+					if (result >= ATTACK_ACCURACY) {
+						goals[col].goalHit(true);
+					} else {
+						goals[col].goalHit(false);
+					}
+
                     if (j >= targets->size()) {
                         break;
                     }
@@ -162,7 +168,7 @@ bool Controller::update() {
             } else {
                 // TODO: Probably want to have these be dynamicaly
                 // based on difficulty level instead of static.
-                if (accuracy > 75) {
+                if (accuracy > ATTACK_ACCURACY) {
                     printf("Good\n");
                     currentAnimationType = ANIMATION_HIT;
                 } else {
@@ -191,6 +197,14 @@ bool Controller::update() {
 				
             // reset targets, goals
 			addRandomSet();
+		}
+
+		// Check if key is pressed and there is no target to hit
+		for(int i = 0; i < NUM_COLUMNS; i++) {
+			if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
+				targetSets[0].addMiss();
+				goals[i].goalMiss();
+			}
 		}
     }
     return true;
@@ -231,36 +245,30 @@ void Controller::processEvents() {
         } else if (Event.Type == sf::Event::KeyPressed) {
             switch(Event.Key.Code) {
                 case sf::Key::Q:
-                    goals[0].goalHit();
                     keyPresses[0] = true;
                     break;
                 case sf::Key::W:
                     if (NUM_COLUMNS >= 2) {
-                        goals[1].goalHit();
                         keyPresses[1] = true;
                     }
                     break;
                 case sf::Key::E:
                     if (NUM_COLUMNS >= 3) {
-                        goals[2].goalHit();
                         keyPresses[2] = true;
                     }
                     break;
                 case sf::Key::R:
                     if (NUM_COLUMNS >= 4) {
-                        goals[3].goalHit();
                         keyPresses[3] = true;
                     }
                     break;
                 case sf::Key::T:
                     if (NUM_COLUMNS >= 5) {
-                        goals[4].goalHit();
                         keyPresses[4] = true;
                     }
                     break;
                 case sf::Key::Y:
                     if (NUM_COLUMNS >= 6) {
-                        goals[5].goalHit();
                         keyPresses[5] = true;
                     }
                     break;

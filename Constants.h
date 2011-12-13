@@ -9,14 +9,17 @@
 #define MAX_NUM_TARGETS 33
 #define TARGET_SPEED 300
 #define SPEED_RATIO .5
-#define MAX_HIT_DISTANCE 32
+#define MAX_HIT_DISTANCE 40
 #define MISS_PENALTY -5
 #define SPEED_START 150
 #define SPEED_INCREASE 50
 
 // Goal animation constants
 #define HIT_FRAMES 10
-#define HIT_RATIO 0.3
+#define OK_FRAMES 10
+#define ROTATE_FRAMES 10
+#define HIT_RATIO 0.5
+#define OK_RATIO 0.5
 
 // Damage constants
 #define BASIC_ACTION_DAMAGE 10
@@ -24,6 +27,7 @@
 
 // Action animation constants
 #define NUM_PASSES 3
+#define ATTACK_ACCURACY 60
 
 // Character constants
 #define BASIC_ENEMY_HEALTH 100
