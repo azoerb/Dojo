@@ -10,13 +10,13 @@
 
 // TargetSet constants
 #define MIN_NUM_TARGETS 3
-#define MAX_NUM_TARGETS 33
+#define MAX_NUM_TARGETS 15
 #define TARGET_SPEED 300
 #define SPEED_RATIO .5
 #define MAX_HIT_DISTANCE 40
 #define MISS_PENALTY -5
-#define SPEED_START 150
-#define SPEED_INCREASE 50
+#define SPEED_START 125
+#define SPEED_INCREASE 25
 #define BLOCK_BOUND 50
 #define HIT_BOUND 70
 
@@ -43,8 +43,8 @@
 #define ATTACK_ACCURACY 60
 
 // Character constants
-#define BASIC_ENEMY_HEALTH 10
-#define PLAYER_HEALTH 10
+#define BASIC_ENEMY_HEALTH 100
+#define PLAYER_HEALTH 70
 
 #define NUM_IDLE_FRAMES 5
 

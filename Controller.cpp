@@ -45,162 +45,142 @@ void Controller::mainLoop() {
         processEvents();
         update();
         draw();
-
-        /*if(gameState == GAME_PLAY) {
-            if(update()) {
-                draw();
-            }
-        } else if (gameState == GAME_MENU) {
-            updateMenu
-        } else {
-            #if defined(WIN_32)
-                Sleep(10);
-            #elif defined(UNIX)
-                usleep(10);
-            #endif
-        }*/
     }
 }
 
 void Controller::update() {
-    switch (gameState) {
-        case GAME_MENU:
-            
-            break;
-            
-        case GAME_PLAY:
-            // use idle animation after action animation is complete
-            if(numActionFrames > 0) {
-                numActionFrames--;
+    if (gameState == GAME_PLAY) {
+        // use idle animation after action animation is complete
+        if(numActionFrames > 0) {
+            numActionFrames--;
 
-                // update health
-                if(numActionFrames == 0) {
-                    switch(currentAnimationType) {
-                    case ANIMATION_HIT:
-                        enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
-                        break;
-                    case ANIMATION_COUNTER:
-                        player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
-                        break;
-                    }
+            // update health
+            if(numActionFrames == 0) {
+                switch(currentAnimationType) {
+                case ANIMATION_HIT:
+                    enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                    break;
+                case ANIMATION_COUNTER:
+                    player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
+                    break;
+                }
 
-                     // check if player died
-                    if(player->getHealth() <= 0) {
-                        //
-                        gameState = GAME_MENU;
-                        window->Display();
-                    }
+                 // check if player died
+                if(player->getHealth() <= 0) {
+                    //
+                    gameState = GAME_MENU;
+                    window->Display();
+                }
 
-                    // check if enemy died
-                    if(enemy->getHealth() <= 0) {
-                        //
-                        resetState(level+1);
-                        window->Display();
-                    }
+                // check if enemy died
+                if(enemy->getHealth() <= 0) {
+                    //
+                    resetState(level+1);
+                    window->Display();
                 }
             }
+        }
 
-            elapsedTime = window->GetFrameTime();
+        elapsedTime = window->GetFrameTime();
 
-            // fix for between levels
-            if(elapsedTime > .1) {
-                elapsedTime = .1;
-            }
+        // fix for between levels
+        if(elapsedTime > .1) {
+            elapsedTime = .1;
+        }
 
-            // set to true when we encounter the first target in the respective column
-            // to avoid checking far away targets
-            // this fixes the problem of "missing" all targets in the column
-            bool found[4] = {false, false, false, false};
+        // set to true when we encounter the first target in the respective column
+        // to avoid checking far away targets
+        // this fixes the problem of "missing" all targets in the column
+        bool found[4] = {false, false, false, false};
 
-            for (int i = 0; i < targetSets.size(); i++) {
-                targetSets[i].update(elapsedTime);
+        for (int i = 0; i < targetSets.size(); i++) {
+            targetSets[i].update(elapsedTime);
+            
+            std::vector<Target>* targets = targetSets[i].getTargets();
+            for (int j = 0; j < targets->size(); j++) {
+                bool hit = false;
                 
-                std::vector<Target>* targets = targetSets[i].getTargets();
-                for (int j = 0; j < targets->size(); j++) {
-                    bool hit = false;
-                    
-                    // Remove Target if key is hit
-                    int col = targets->at(j).getColumn();
-                    if (keyPresses[col] && !found[col]) {
-                        float result = targets->at(j).hitCheck(&goals[col]);
-                        if (result == -1) {
-                            if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
-                                found[col] = true;
-                                targetSets[i].addMiss();
-                                goals[col].goalMiss();
-                            }
-                        } else {
+                // Remove Target if key is hit
+                int col = targets->at(j).getColumn();
+                if (keyPresses[col] && !found[col]) {
+                    float result = targets->at(j).hitCheck(&goals[col]);
+                    if (result == -1) {
+                        if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
                             found[col] = true;
-                            targetSets[i].changeAccuracy(result);
-                            targetSets[i].removeTarget(j);
-                            hit = true;
+                            targetSets[i].addMiss();
+                            goals[col].goalMiss();
+                        }
+                    } else {
+                        found[col] = true;
+                        targetSets[i].changeAccuracy(result);
+                        targetSets[i].removeTarget(j);
+                        hit = true;
 
-                            if (result >= ATTACK_ACCURACY) {
-                                goals[col].goalHit(true);
-                            } else {
-                                goals[col].goalHit(false);
-                            }
+                        if (result >= ATTACK_ACCURACY) {
+                            goals[col].goalHit(true);
+                        } else {
+                            goals[col].goalHit(false);
+                        }
 
-                            if (j >= targets->size()) {
-                                break;
-                            }
+                        if (j >= targets->size()) {
+                            break;
                         }
                     }
-                    
-                    // Remove any off-screen Targets
-                    if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
-                        targetSets[i].addMiss();
-                        targetSets[i].removeTarget(j);
-                    }
                 }
-
-                // Once all of the targetSet's targets are gone
-                if (targets->size() == 0) {
-                    // Determine accuracy and play animation
-                    float accuracy = targetSets[i].getAccuracy();
-
-                    currentAnimation = rand() % basicActions.size();
-                    
-                    // TODO: Still want these to be modified by the current level.
-                    if (accuracy < BLOCK_BOUND) {
-                        currentAnimationType = ANIMATION_COUNTER;
-                    } else if (accuracy > BLOCK_BOUND && accuracy < HIT_BOUND) {
-                        currentAnimationType = ANIMATION_BLOCK;
-                    } else {
-                        currentAnimationType = ANIMATION_HIT;
-                    }
-                        
-                    basicActions[currentAnimation]->selectAnimation(currentAnimationType);
-                    numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
-
-                    // update health here when player/enemy are about to die
-                    switch(currentAnimationType) {
-                    case ANIMATION_HIT:
-                        if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
-                            enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
-                        break;
-                    case ANIMATION_COUNTER:
-                        if(player->getHealth() <= BASIC_ACTION_DAMAGE)
-                            player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
-                        break;
-                    }
-
-                    // Delete the actionSet
-                    targetSets.erase(targetSets.begin() + i);
-                        
-                    // reset targets, goals
-                    addRandomSet();
-                }
-
-                // Check if key is pressed and there is no target to hit
-                for(int i = 0; i < NUM_COLUMNS; i++) {
-                    if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
-                        targetSets[0].addMiss();
-                        goals[i].goalMiss();
-                    }
+                
+                // Remove any off-screen Targets
+                if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
+                    targetSets[i].addMiss();
+                    targetSets[i].removeTarget(j);
                 }
             }
-            break;
+
+            // Once all of the targetSet's targets are gone
+            if (targets->size() == 0) {
+                // Determine accuracy and play animation
+                float accuracy = targetSets[i].getAccuracy();
+
+                currentAnimation = rand() % basicActions.size();
+                
+                // TODO: Still want these to be modified by the current level.
+                if (accuracy < BLOCK_BOUND) {
+                    currentAnimationType = ANIMATION_COUNTER;
+                } else if (accuracy > BLOCK_BOUND && accuracy < HIT_BOUND) {
+                    currentAnimationType = ANIMATION_BLOCK;
+                } else {
+                    currentAnimationType = ANIMATION_HIT;
+                }
+                    
+                basicActions[currentAnimation]->selectAnimation(currentAnimationType);
+                numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
+
+                // update health here when player/enemy are about to die
+                switch(currentAnimationType) {
+                case ANIMATION_HIT:
+                    if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
+                        enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                    break;
+                case ANIMATION_COUNTER:
+                    if(player->getHealth() <= BASIC_ACTION_DAMAGE)
+                        player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
+                    break;
+                }
+
+                // Delete the actionSet
+                targetSets.erase(targetSets.begin() + i);
+                    
+                // reset targets, goals
+                addRandomSet();
+            }
+
+            // Check if key is pressed and there is no target to hit
+            for(int i = 0; i < NUM_COLUMNS; i++) {
+                if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
+                    targetSets[0].addMiss();
+                    goals[i].goalMiss();
+                }
+            }
+        }
     }
 }
 
