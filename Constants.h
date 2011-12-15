@@ -1,5 +1,9 @@
 #pragma once
 
+// Window constants
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+
 // Column constants
 #define COLUMN_WIDTH 64
 #define NUM_COLUMNS 4
@@ -13,6 +17,15 @@
 #define MISS_PENALTY -5
 #define SPEED_START 150
 #define SPEED_INCREASE 50
+#define BLOCK_BOUND 50
+#define HIT_BOUND 70
+
+// Menu constants
+#define NUM_MENU_ITEMS 2
+#define NUM_DIFFICULTY_LEVELS 3
+
+// Special move constants
+#define SPECIAL_PERCENTAGE 10
 
 // Goal animation constants
 #define HIT_FRAMES 10
@@ -30,8 +43,8 @@
 #define ATTACK_ACCURACY 60
 
 // Character constants
-#define BASIC_ENEMY_HEALTH 100
-#define PLAYER_HEALTH 100
+#define BASIC_ENEMY_HEALTH 10
+#define PLAYER_HEALTH 10
 
 #define NUM_IDLE_FRAMES 5
 
