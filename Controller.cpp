@@ -159,6 +159,7 @@ void Controller::update() {
 
 					if (accuracy > CRITICAL_BOUND) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
+                        criticalAttack = true;
 					}
                 }
                     
