@@ -21,6 +21,7 @@ private:
     
     sf::Image targetImg;
     sf::Image goalImg;
+    sf::Image goalAltImg;
     sf::Image backgroundImg;
     sf::Image starImg;
     sf::Image loadingImg;
@@ -53,7 +54,6 @@ private:
     void randomizeGoals();
     void displayMessage(std::string message, int x, int y, sf::RenderTarget* target, int size = 50, sf::Color color = sf::Color(0,0,0));
     void resetState(int level);
-
     
 public:
     Controller();

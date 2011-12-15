@@ -1,13 +1,41 @@
 #include "Goal.h"
 
 
-Goal::Goal(sf::Image* img, int goalPosition, int column) : ColumnObject(img, column) {
+Goal::Goal(sf::Image* img1, sf::Image* img2, int goalPosition, int column) : ColumnObject(img1, column) {
     newSize = size;
     hitFrames = 0;
 	okFrames = 0;
 	rotateFrames = 0;
 
+	altSprite.SetImage(*img2);
+    size = img2->GetHeight();
+    altSprite.SetCenter(size / 2, size / 2);
+
+    switch (column) {
+        case 0:
+            altSprite.SetColor(sf::Color(255, 100, 0, 255));
+            break;
+        case 1:
+            altSprite.SetColor(sf::Color(0, 0, 255, 255));
+            break;
+        case 2:
+            altSprite.SetColor(sf::Color(0, 255, 0, 255));
+            break;
+        case 3:
+            altSprite.SetColor(sf::Color(255, 0, 0, 255));
+            break;
+        case 4:
+            altSprite.SetColor(sf::Color(255, 255, 0, 255));
+            break;
+        case 5:
+            altSprite.SetColor(sf::Color(0, 255, 255, 255));
+            break;
+        default:
+            break;
+    }
+
     sprite.SetPosition((column + 1) * COLUMN_WIDTH, goalPosition);
+    altSprite.SetPosition((column + 1) * COLUMN_WIDTH, goalPosition);
 }
 
 void Goal::draw(sf::RenderTarget* target) {
@@ -36,8 +64,13 @@ void Goal::draw(sf::RenderTarget* target) {
 		sprite.Rotate(rotate);
 	}
 
-    sprite.Resize(newSize, newSize);
-    target->Draw(sprite);
+	if (hitFrames > 0) {
+		altSprite.Resize(newSize, newSize);
+		target->Draw(altSprite);
+	} else {
+		sprite.Resize(newSize, newSize);
+		target->Draw(sprite);
+	}
 }
 
 void Goal::goalHit(bool good) {

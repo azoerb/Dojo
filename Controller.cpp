@@ -298,6 +298,7 @@ void Controller::processEvents() {
 void Controller::loadResources() {
     if (!targetImg.LoadFromFile("target.png") ||
         !goalImg.LoadFromFile("goal.png") ||
+        !goalAltImg.LoadFromFile("goal-alt.png") ||
         !backgroundImg.LoadFromFile("background.png") ||
         !starImg.LoadFromFile("star1-25.png")) {
         
@@ -371,10 +372,8 @@ void Controller::initializeObjects() {
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
 
-    // Death animation?
-    
     for (int i = 0; i < NUM_COLUMNS; i++) {
-        goals.push_back(Goal(&goalImg, 528, i));
+        goals.push_back(Goal(&goalImg, &goalAltImg, 528, i));
     }
 }
 
@@ -393,7 +392,7 @@ void Controller::addRandomSet() {
         int col = rand() % NUM_COLUMNS;
 		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, col, y));
 
-        // add doubles, triples, quadrouples
+        // add doubles, triples, quadruples
         /*
         if(level > 2 && rand() % 10 < 2) {
             targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+1) % NUM_COLUMNS, y));
@@ -418,7 +417,7 @@ void Controller::randomizeGoals() {
     int pos = 250 + rand() % 250;
 
     for(int i = 0; i < NUM_COLUMNS; i++) {
-        goals.push_back(Goal(&goalImg, pos, i));
+        goals.push_back(Goal(&goalImg, &goalAltImg, pos, i));
     }
 }
 
