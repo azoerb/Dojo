@@ -1,249 +1,265 @@
 #include "Controller.h"
 #include <math.h>
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-
 Controller::Controller() {
     window = new sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Dojo Hero");
     window->UseVerticalSync(true);
     
     player = new Player(PLAYER_HEALTH);
     enemy = new Enemy(BASIC_ENEMY_HEALTH);
-
-    resetState(1);
+    
+    gameState = GAME_MENU;
+    menuState = STATE_MAIN_MENU;
 
     // display loading image
     loadingImg.LoadFromFile("loading.png");
     loading.SetImage(loadingImg);
-    window->Clear();
-    window->Draw(loading);
-    window->Display();
-
+    
+    drawLoadScreen();
 
     loadResources();
     initializeObjects();
-
-    window->Clear(sf::Color(255,255,255));
-    displayMessage("Use QWER to Play", 200, 200, window);
-    displayMessage("Press Any Key to Start.", 150, 300, window);
-    window->Display();
 }
 
 Controller::~Controller() {
     if (window) { delete window; }
 	if (player) { delete player; }
 	if (enemy) { delete enemy; }
+    
+    for (int i = 0; i < basicActions.size(); i++) {
+        if (basicActions.at(i)) { delete basicActions[i]; }
+    }
+    
+    for (int i = 0; i < specialActions.size(); i++) {
+        if (specialActions.at(i)) { delete specialActions[i]; }
+    }
+    
+    for (int i = 0; i < comboActions.size(); i++) {
+        if (comboActions.at(i)) { delete comboActions[i]; }
+    }
+    
 }
 
 void Controller::mainLoop() {
     while (window->IsOpened()) {
-
-        // reset all key presses
-        for(int i = 0; i < NUM_COLUMNS; i++) {
-            keyPresses[i] = false;
-        }
-
         processEvents();
-
-
-        if(gameStatus == GAME_PLAY) {
-            if(update()) {
-                draw();
-            }
-        } else {
-#if defined(WIN_32)
-            Sleep(10);
-#elif defined(UNIX)
-            usleep(10);
-#endif
-        }
+        update();
+        draw();
     }
 }
 
-bool Controller::update() {
+void Controller::update() {
+    if (gameState == GAME_PLAY) {
+        // use idle animation after action animation is complete
+        if(numActionFrames > 0) {
+            numActionFrames--;
 
-	// use idle animation after action animation is complete
-	if(numActionFrames > 0) {
-		numActionFrames--;
-
-        // update health
-        if(numActionFrames == 0) {
-            switch(currentAnimationType) {
-            case ANIMATION_HIT:
-                enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
-                break;
-            case ANIMATION_COUNTER:
-                player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
-                break;
-            }
-
-             // check if player died
-            if(player->getHealth() <= 0) {
-                printf("You lost\n");
-                displayMessage("You have lost! Press any key to try again.", 100, 10, window, 30, sf::Color(255,0,0));
-                resetState(1);
-                addRandomSet();
-                window->Display();
-                return false;
-            }
-
-            // check if enemy died
-            if(enemy->getHealth() <= 0) {
-                printf("You won\n");
-                displayMessage("You have won! Press any key to continue.", 100, 10, window, 30, sf::Color(255,0,0));
-                resetState(level+1);
-                addRandomSet();
-                window->Display();
-                return false;
-            }
-        }
-	}
-
-    elapsedTime = window->GetFrameTime();
-
-    // fix for between levels
-    if(elapsedTime > .1) {
-        elapsedTime = .1;
-    }
-
-    // set to true when we encounter the first target in the respective column
-    // to avoid checking far away targets
-    // this fixes the problem of "missing" all targets in the column
-    bool found[4] = {false, false, false, false};
-
-	for (int i = 0; i < targetSets.size(); i++) {
-        targetSets[i].update(elapsedTime);
-        
-        std::vector<Target>* targets = targetSets[i].getTargets();
-        for (int j = 0; j < targets->size(); j++) {
-            bool hit = false;
-            
-			// Remove Target if key is hit
-            int col = targets->at(j).getColumn();
-            if (keyPresses[col] && !found[col]) {
-                float result = targets->at(j).hitCheck(&goals[col]);
-                if (result == -1) {
-                    if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
-                        found[col] = true;
-						targetSets[i].addMiss();
-						goals[col].goalMiss();
-                    }
-                } else {
-                    found[col] = true;
-                    targetSets[i].changeAccuracy(result);
-                    targetSets[i].removeTarget(j);
-                    hit = true;
-
-					if (result >= ATTACK_ACCURACY) {
-						goals[col].goalHit(true);
-					} else {
-						goals[col].goalHit(false);
-					}
-
-                    if (j >= targets->size()) {
-                        break;
-                    }
-                }
-            }
-            
-			// Remove any off-screen Targets
-            if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
-                targetSets[i].addMiss();
-                targetSets[i].removeTarget(j);
-            }
-        }
-
-        // Once all of the targetSet's targets are gone
-        if (targets->size() == 0) {
-            // Determine accuracy and play animation
-            float accuracy = targetSets[i].getAccuracy();
-
-            currentAnimation = rand() % basicActions.size();
-
-            if (targetSets[i].getNumMisses() == 1 || targetSets[i].getNumMisses() == 2) {
-                printf("OK\n");
-                currentAnimationType = ANIMATION_BLOCK;
-            } else if(targetSets[i].getNumMisses() > 2) {
-                printf("Bad\n");
-                currentAnimationType = ANIMATION_COUNTER;
-            } else {
-                // TODO: Probably want to have these be dynamicaly
-                // based on difficulty level instead of static.
-                if (accuracy > ATTACK_ACCURACY) {
-                    printf("Good\n");
-                    currentAnimationType = ANIMATION_HIT;
-                } else {
-                    printf("OK\n");
-                    currentAnimationType = ANIMATION_BLOCK;
-                }
-            }
-                
-			basicActions[currentAnimation]->selectAnimation(currentAnimationType);
-            numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
-
-            // update health here when player/enemy are about to die
-            switch(currentAnimationType) {
-            case ANIMATION_HIT:
-                if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
+            // update health
+            if(numActionFrames == 0) {
+                switch(currentAnimationType) {
+                case ANIMATION_HIT:
                     enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
-                break;
-            case ANIMATION_COUNTER:
-                if(player->getHealth() <= BASIC_ACTION_DAMAGE)
+                    break;
+                case ANIMATION_COUNTER:
                     player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
-                break;
+                    break;
+                }
+
+                 // check if player died
+                if(player->getHealth() <= 0) {
+                    //
+                    gameState = GAME_MENU;
+                    window->Display();
+                }
+
+                // check if enemy died
+                if(enemy->getHealth() <= 0) {
+                    //
+                    resetState(level+1);
+                    window->Display();
+                }
+            }
+        }
+
+        elapsedTime = window->GetFrameTime();
+
+        // fix for between levels
+        if(elapsedTime > .1) {
+            elapsedTime = .1;
+        }
+
+        // set to true when we encounter the first target in the respective column
+        // to avoid checking far away targets
+        // this fixes the problem of "missing" all targets in the column
+        bool found[4] = {false, false, false, false};
+
+        for (int i = 0; i < targetSets.size(); i++) {
+            targetSets[i].update(elapsedTime);
+            
+            std::vector<Target>* targets = targetSets[i].getTargets();
+            for (int j = 0; j < targets->size(); j++) {
+                bool hit = false;
+                
+                // Remove Target if key is hit
+                int col = targets->at(j).getColumn();
+                if (keyPresses[col] && !found[col]) {
+                    float result = targets->at(j).hitCheck(&goals[col]);
+                    if (result == -1) {
+                        if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
+                            found[col] = true;
+                            targetSets[i].addMiss();
+                            goals[col].goalMiss();
+                        }
+                    } else {
+                        found[col] = true;
+                        targetSets[i].changeAccuracy(result);
+                        targetSets[i].removeTarget(j);
+                        hit = true;
+
+                        if (result >= ATTACK_ACCURACY) {
+                            goals[col].goalHit(true);
+                        } else {
+                            goals[col].goalHit(false);
+                        }
+
+                        if (j >= targets->size()) {
+                            break;
+                        }
+                    }
+                }
+                
+                // Remove any off-screen Targets
+                if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
+                    targetSets[i].addMiss();
+                    targetSets[i].removeTarget(j);
+                }
             }
 
-            // Delete the actionSet
-            targetSets.erase(targetSets.begin() + i);
-				
-            // reset targets, goals
-			addRandomSet();
-		}
+            // Once all of the targetSet's targets are gone
+            if (targets->size() == 0) {
+                // Determine accuracy and play animation
+                float accuracy = targetSets[i].getAccuracy();
 
-		// Check if key is pressed and there is no target to hit
-		for(int i = 0; i < NUM_COLUMNS; i++) {
-			if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
-				targetSets[0].addMiss();
-				goals[i].goalMiss();
-			}
-		}
+                currentAnimation = rand() % basicActions.size();
+                
+                // TODO: Still want these to be modified by the current level.
+                if (accuracy < BLOCK_BOUND) {
+                    currentAnimationType = ANIMATION_COUNTER;
+                } else if (accuracy > BLOCK_BOUND && accuracy < HIT_BOUND) {
+                    currentAnimationType = ANIMATION_BLOCK;
+                } else {
+                    currentAnimationType = ANIMATION_HIT;
+                }
+                    
+                basicActions[currentAnimation]->selectAnimation(currentAnimationType);
+                numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
+
+                // update health here when player/enemy are about to die
+                switch(currentAnimationType) {
+                case ANIMATION_HIT:
+                    if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
+                        enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                    break;
+                case ANIMATION_COUNTER:
+                    if(player->getHealth() <= BASIC_ACTION_DAMAGE)
+                        player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
+                    break;
+                }
+
+                // Delete the actionSet
+                targetSets.erase(targetSets.begin() + i);
+                    
+                // reset targets, goals
+                addRandomSet();
+            }
+
+            // Check if key is pressed and there is no target to hit
+            for(int i = 0; i < NUM_COLUMNS; i++) {
+                if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
+                    targetSets[0].addMiss();
+                    goals[i].goalMiss();
+                }
+            }
+        }
     }
-    return true;
 }
 
 void Controller::draw() {
+    switch (gameState) {
+        case GAME_MENU:
+            switch (menuState) {
+                case STATE_MAIN_MENU:
+                    window->Clear();
+                    window->Draw(menuNewGame);
+                    window->Draw(menuInstructions);
+                    window->Draw(menuSelector);
+                    window->Display();
+                    break;
+                    
+                case STATE_NEW_GAME:
+                    window->Clear();
+                    window->Draw(menuBeginner);
+                    window->Draw(menuIntermediate);
+                    window->Draw(menuAdvanced);
+                    window->Draw(menuSelector);
+                    window->Display();
+                    break;
+                    
+                case STATE_INSTRUCTIONS:
+                    window->Clear();
+                    displayMessage("Use QWER keys to Play", 180, 200, window, 40, sf::Color(255, 255, 255));
+                    window->Display();
+                    break;
+            }
+            break;
+        case GAME_PLAY:
+            window->Clear();
+            
+            window->Draw(background);
+            
+            if(numActionFrames > 0) {
+                basicActions[currentAnimation]->draw(window);
+            } else {
+                idleAnimation.draw(window);
+            }
+            
+            for(int i = 0; i < targetSets.size(); i++) {
+                targetSets[i].draw(window);
+            }
+            
+            for(int i = 0; i < goals.size(); i++) {
+                goals[i].draw(window);
+            }
+            
+            std::stringstream ss;
+            ss << level;
+            
+            displayMessage("You", 20, 60, window, 20, sf::Color(255,255,255));
+            displayMessage("Enemy", 730, 60, window, 20, sf::Color(255,255,255));
+            displayMessage("Level " + ss.str(), WINDOW_WIDTH / 2 - 40, 10, window, 30, sf::Color(255,255,255));
+            player->drawHealthBar(&star, window);
+            enemy->drawHealthBar(&star, window);
+            
+            window->Display();
+            break;
+    }
+}
+
+void Controller::drawLoadScreen() {
     window->Clear();
-
-    window->Draw(background);
-    
-	if(numActionFrames > 0) {
-		basicActions[currentAnimation]->draw(window);
-	} else {
-		idleAnimation.draw(window);
-	}
-
-	for(int i = 0; i < targetSets.size(); i++) {
-		targetSets[i].draw(window);
-	}
-
-	for(int i = 0; i < goals.size(); i++) {
-		goals[i].draw(window);
-	}
-
-	displayMessage("You", 20, 30, window, 20, sf::Color(255,255,255));
-	displayMessage("Enemy", 730, 30, window, 20, sf::Color(255,255,255));
-    player->drawHealthBar(&star, window);
-    enemy->drawHealthBar(&star, window);
-
-	window->Display();
+    window->Draw(loading);
+    window->Display();
 }
 
 void Controller::processEvents() {
-    // Process events
+    // reset all key presses
+    for(int i = 0; i < NUM_COLUMNS; i++) {
+        keyPresses[i] = false;
+    }
+    
+    
     sf::Event Event;
     while (window->GetEvent(Event)) {
-        // Close window : exit
         if (Event.Type == sf::Event::Closed) {
             window->Close();
         } else if (Event.Type == sf::Event::KeyPressed) {
@@ -251,45 +267,110 @@ void Controller::processEvents() {
                 case sf::Key::Q:
                     keyPresses[0] = true;
                     break;
+                    
                 case sf::Key::W:
                     if (NUM_COLUMNS >= 2) {
                         keyPresses[1] = true;
                     }
                     break;
+                    
                 case sf::Key::E:
                     if (NUM_COLUMNS >= 3) {
                         keyPresses[2] = true;
                     }
                     break;
+                    
                 case sf::Key::R:
                     if (NUM_COLUMNS >= 4) {
                         keyPresses[3] = true;
                     }
                     break;
+                    
                 case sf::Key::T:
                     if (NUM_COLUMNS >= 5) {
                         keyPresses[4] = true;
                     }
                     break;
+                    
                 case sf::Key::Y:
                     if (NUM_COLUMNS >= 6) {
                         keyPresses[5] = true;
                     }
                     break;
+                    
                 case sf::Key::Escape:
-                    if(gameStatus == GAME_PAUSE) {
-                        gameStatus = GAME_PLAY;
-                    } else {
-                        gameStatus = GAME_PAUSE;
+                    if(gameState == GAME_PAUSE) {
+                        gameState = GAME_PLAY;
+                    } else if (gameState == GAME_PLAY) {
+                        gameState = GAME_PAUSE;
+                    } else if (gameState == GAME_MENU && (menuState == STATE_NEW_GAME || menuState == STATE_INSTRUCTIONS)) {
+                        resetMenuSelector();
+                        menuState = STATE_MAIN_MENU;
                     }
                     break;
-            }
-
-            if(gameStatus == GAME_WAIT_FOR_INPUT) {
-                gameStatus = GAME_PLAY;
-                targetSets.clear();
-                keyPresses[0] = keyPresses[1] = keyPresses[2] = keyPresses[3] = false;
-                addRandomSet();
+                    
+                case sf::Key::Space:
+                    if (gameState == GAME_MENU) {
+                        if (menuState == STATE_MAIN_MENU) {
+                            if (menuSelectorPosition == 0) {
+                                // New Game Menu
+                                resetMenuSelector();
+                                menuState = STATE_NEW_GAME;
+                            } else {
+                                // Instructions Menu
+                                resetMenuSelector();
+                                menuState = STATE_INSTRUCTIONS;
+                            }
+                        } else if (menuState == STATE_NEW_GAME) {
+                            // Start the game
+                            resetMenuSelector();
+                            menuState = STATE_MAIN_MENU;
+                            switch (menuSelectorPosition) {
+                                case 0:
+                                    // Easy
+                                    resetState(1);
+                                    break;
+                                case 1:
+                                    // Medium
+                                    resetState(1);
+                                    break;
+                                case 2:
+                                    // Hard
+                                    resetState(1);
+                                    break;
+                            }
+                        } else {
+                            // Back to Main Menu
+                            resetMenuSelector();
+                            menuState = STATE_MAIN_MENU;
+                        }
+                    }
+                    break;
+                    
+                case sf::Key::Up:
+                    if (gameState == GAME_MENU) {
+                        if (menuSelectorPosition > 0) {
+                            menuSelectorPosition--;
+                            menuSelector.SetPosition(menuSelector.GetPosition().x, menuSelector.GetPosition().y - 60);
+                        }
+                    }
+                    break;
+                    
+                case sf::Key::Down:
+                    if (gameState == GAME_MENU) {
+                        if (menuState == STATE_MAIN_MENU) {
+                            if (menuSelectorPosition < NUM_MENU_ITEMS - 1) {
+                                menuSelectorPosition++;
+                                menuSelector.SetPosition(menuSelector.GetPosition().x, menuSelector.GetPosition().y + 60);
+                            }
+                        } else if (menuState == STATE_NEW_GAME) {
+                            if (menuSelectorPosition < NUM_DIFFICULTY_LEVELS - 1) {
+                                menuSelectorPosition++;
+                                menuSelector.SetPosition(menuSelector.GetPosition().x, menuSelector.GetPosition().y + 60);
+                            }
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -300,7 +381,12 @@ void Controller::loadResources() {
         !goalImg.LoadFromFile("goal.png") ||
         !goalAltImg.LoadFromFile("goal-alt.png") ||
         !backgroundImg.LoadFromFile("background.png") ||
-        !starImg.LoadFromFile("star1-25.png")) {
+        !starImg.LoadFromFile("star1-25.png") ||
+        !menuNewGameImg.LoadFromFile("menu-new-game.png") ||
+        !menuInstructionsImg.LoadFromFile("menu-instructions.png") ||
+        !menuBeginnerImg.LoadFromFile("menu-beginner.png") ||
+        !menuIntermediateImg.LoadFromFile("menu-intermediate.png") ||
+        !menuAdvancedImg.LoadFromFile("menu-advanced.png")) {
         
         // This should quit or throw an exception
         printf("Error loading resources - controller\n");
@@ -312,6 +398,21 @@ void Controller::initializeObjects() {
 
     background.SetImage(backgroundImg);
     star.SetImage(starImg);
+    menuNewGame.SetImage(menuNewGameImg);
+    menuInstructions.SetImage(menuInstructionsImg);
+    menuBeginner.SetImage(menuBeginnerImg);
+    menuIntermediate.SetImage(menuIntermediateImg);
+    menuAdvanced.SetImage(menuAdvancedImg);
+    menuSelector.SetImage(starImg);
+    
+    menuNewGame.SetPosition(50, 30);
+    menuInstructions.SetPosition(50, 90);
+    
+    menuBeginner.SetPosition(50, 30);
+    menuIntermediate.SetPosition(50, 90);
+    menuAdvanced.SetPosition(50, 150);
+    
+    menuSelector.SetPosition(10, 45);
     
     // Add Kick animations
     Action* kick = new Action();
@@ -427,7 +528,7 @@ void Controller::displayMessage(std::string message, int x, int y, sf::RenderTar
     text.SetColor(color);
     text.SetFont(sf::Font::GetDefaultFont());
     text.SetSize(size);
-    text.Move(x, y);
+    text.SetPosition(x, y);
 
     target->Draw(text);
 }
@@ -440,5 +541,16 @@ void Controller::resetState(int level) {
     player->setHealth(PLAYER_HEALTH);
     enemy->setHealth(PLAYER_HEALTH);
 
-    gameStatus = GAME_WAIT_FOR_INPUT;
+    gameState = GAME_PLAY;
+    
+    targetSets.clear();
+    for (int i = 0; i < NUM_COLUMNS; i++) {
+        keyPresses[i] = false;
+    }
+    addRandomSet();
+}
+
+void Controller::resetMenuSelector() {
+    menuSelectorPosition = 0;
+    menuSelector.SetPosition(10, 45);
 }
