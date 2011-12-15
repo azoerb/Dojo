@@ -19,6 +19,7 @@
 #define SPEED_INCREASE 25
 #define BLOCK_BOUND 50
 #define HIT_BOUND 70
+#define CRITICAL_BOUND 90
 
 // Menu constants
 #define NUM_MENU_ITEMS 2
@@ -36,17 +37,18 @@
 
 // Damage constants
 #define BASIC_ACTION_DAMAGE 10
+#define CRITICAL_ACTION_DAMAGE 20
 #define COMBO_ACTION_DAMAGE 20
 
 // Action animation constants
 #define NUM_PASSES 3
-#define ATTACK_ACCURACY 60
 
 // Character constants
 #define BASIC_ENEMY_HEALTH 100
 #define PLAYER_HEALTH 70
 
 #define NUM_IDLE_FRAMES 5
+#define NUM_CRITICAL_FRAMES 100
 
 #define NUM_KICK_HIT_FRAMES 35
 #define NUM_KICK_BLOCK_FRAMES 30

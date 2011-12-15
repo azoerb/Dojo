@@ -61,6 +61,9 @@ private:
     int currentAnimation;
     int currentAnimationType;
 
+	bool criticalAttack;
+	int criticalFrame;
+
 	Player* player;
 	Enemy* enemy;
 
@@ -76,7 +79,7 @@ private:
 
     void addRandomSet();
     void randomizeGoals();
-    void displayMessage(std::string message, int x, int y, sf::RenderTarget* target, int size = 50, sf::Color color = sf::Color(0,0,0));
+    void displayText(std::string message, int x, int y, sf::RenderTarget* target, int size = 50, sf::Color color = sf::Color(0,0,0), bool bold = false);
     void resetState(int level);
     void resetMenuSelector();
     

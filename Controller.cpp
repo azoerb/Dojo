@@ -7,6 +7,9 @@ Controller::Controller() {
     
     player = new Player(PLAYER_HEALTH);
     enemy = new Enemy(BASIC_ENEMY_HEALTH);
+
+	criticalAttack = false;
+	criticalFrame = 0;
     
     gameState = GAME_MENU;
     menuState = STATE_MAIN_MENU;
@@ -58,7 +61,12 @@ void Controller::update() {
             if(numActionFrames == 0) {
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-                    enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+					if (criticalAttack) {
+						enemy->setHealth(enemy->getHealth() - CRITICAL_ACTION_DAMAGE);
+						criticalAttack = false;
+					} else {
+						enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+					}
                     break;
                 case ANIMATION_COUNTER:
                     player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
@@ -67,7 +75,6 @@ void Controller::update() {
 
                  // check if player died
                 if(player->getHealth() <= 0) {
-                    //
                     gameState = GAME_MENU;
                     window->Display();
                 }
@@ -107,7 +114,7 @@ void Controller::update() {
                     if (result == -1) {
                         if (targets->at(j).getPosition().y < goals[col].getPosition().y) {
                             found[col] = true;
-                            targetSets[i].addMiss();
+							targetSets[i].changeAccuracy(MISS_PENALTY);
                             goals[col].goalMiss();
                         }
                     } else {
@@ -116,7 +123,7 @@ void Controller::update() {
                         targetSets[i].removeTarget(j);
                         hit = true;
 
-                        if (result >= ATTACK_ACCURACY) {
+						if (result >= HIT_BOUND) {
                             goals[col].goalHit(true);
                         } else {
                             goals[col].goalHit(false);
@@ -130,7 +137,7 @@ void Controller::update() {
                 
                 // Remove any off-screen Targets
                 if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
-                    targetSets[i].addMiss();
+                    targetSets[i].changeAccuracy(MISS_PENALTY);
                     targetSets[i].removeTarget(j);
                 }
             }
@@ -145,10 +152,14 @@ void Controller::update() {
                 // TODO: Still want these to be modified by the current level.
                 if (accuracy < BLOCK_BOUND) {
                     currentAnimationType = ANIMATION_COUNTER;
-                } else if (accuracy > BLOCK_BOUND && accuracy < HIT_BOUND) {
+                } else if (accuracy < HIT_BOUND) {
                     currentAnimationType = ANIMATION_BLOCK;
                 } else {
                     currentAnimationType = ANIMATION_HIT;
+
+					if (accuracy > CRITICAL_BOUND) {
+						criticalFrame = NUM_CRITICAL_FRAMES;
+					}
                 }
                     
                 basicActions[currentAnimation]->selectAnimation(currentAnimationType);
@@ -157,12 +168,20 @@ void Controller::update() {
                 // update health here when player/enemy are about to die
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-                    if(enemy->getHealth() <= BASIC_ACTION_DAMAGE)
-                        enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+					if (criticalAttack) {
+						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE) {
+							enemy->setHealth(0);
+							criticalAttack = false;
+						}
+					} else {
+						if (enemy->getHealth() <= BASIC_ACTION_DAMAGE) {
+							enemy->setHealth(0);
+						}
+					}
                     break;
                 case ANIMATION_COUNTER:
-                    if(player->getHealth() <= BASIC_ACTION_DAMAGE)
-                        player->setHealth(player->getHealth() - BASIC_ACTION_DAMAGE);
+                    if (player->getHealth() <= BASIC_ACTION_DAMAGE)
+                        player->setHealth(0);
                     break;
                 }
 
@@ -176,7 +195,7 @@ void Controller::update() {
             // Check if key is pressed and there is no target to hit
             for(int i = 0; i < NUM_COLUMNS; i++) {
                 if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
-                    targetSets[0].addMiss();
+					targetSets[0].changeAccuracy(MISS_PENALTY);
                     goals[i].goalMiss();
                 }
             }
@@ -207,14 +226,13 @@ void Controller::draw() {
                     
                 case STATE_INSTRUCTIONS:
                     window->Clear();
-                    displayMessage("Use QWER keys to Play", 180, 200, window, 40, sf::Color(255, 255, 255));
+                    displayText("Use QWER keys to Play", 180, 200, window, 40, sf::Color(255, 255, 255));
                     window->Display();
                     break;
             }
             break;
         case GAME_PLAY:
             window->Clear();
-            
             window->Draw(background);
             
             if(numActionFrames > 0) {
@@ -234,12 +252,17 @@ void Controller::draw() {
             std::stringstream ss;
             ss << level;
             
-            displayMessage("You", 20, 60, window, 20, sf::Color(255,255,255));
-            displayMessage("Enemy", 730, 60, window, 20, sf::Color(255,255,255));
-            displayMessage("Level " + ss.str(), WINDOW_WIDTH / 2 - 40, 10, window, 30, sf::Color(255,255,255));
+            displayText("You", 20, 60, window, 20, sf::Color(255,255,255));
+            displayText("Enemy", WINDOW_WIDTH - 70, 60, window, 20, sf::Color(255,255,255));
+            displayText("Level " + ss.str(), WINDOW_WIDTH / 2 - 40, 10, window, 30, sf::Color(255,255,255));
             player->drawHealthBar(&star, window);
             enemy->drawHealthBar(&star, window);
             
+			if (criticalFrame > 0) {
+				displayText("CRITICAL", WINDOW_WIDTH /2 - 100, 100, window, 50, sf::Color(255, 0, 0, 255 * criticalFrame / NUM_CRITICAL_FRAMES), true);
+				criticalFrame--;
+			}
+
             window->Display();
             break;
     }
@@ -413,7 +436,7 @@ void Controller::initializeObjects() {
     menuAdvanced.SetPosition(50, 150);
     
     menuSelector.SetPosition(10, 45);
-    
+
     // Add Kick animations
     Action* kick = new Action();
     kick->addAnimation(ANIMATION_HIT, "Actions/Kick_Hit/Kick_Hit", NUM_KICK_HIT_FRAMES);
@@ -522,13 +545,17 @@ void Controller::randomizeGoals() {
     }
 }
 
-void Controller::displayMessage(std::string message, int x, int y, sf::RenderTarget* target, int size, sf::Color color) {
+void Controller::displayText(std::string message, int x, int y, sf::RenderTarget* target, int size, sf::Color color, bool bold) {
     sf::String text;
     text.SetText(message);
     text.SetColor(color);
     text.SetFont(sf::Font::GetDefaultFont());
     text.SetSize(size);
     text.SetPosition(x, y);
+
+	if (bold) {
+		text.SetStyle(sf::String::Bold);
+	}
 
     target->Draw(text);
 }
