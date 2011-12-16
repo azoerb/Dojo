@@ -84,7 +84,7 @@ bool SoundManager::loopSound(int type) {
 
 void SoundManager::stopSound(int type) {
 
-    if (type <= MUSIC_2) {
+    if (type <= sounds.size()) {
         sounds[type]->Stop();
     }
 }
