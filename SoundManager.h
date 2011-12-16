@@ -26,9 +26,7 @@ enum soundType {
 
 enum musicType {
     MUSIC_0 = 0,
-    MUSIC_1,
-    MUSIC_2
-};    
+};
 
 
 class SoundManager {

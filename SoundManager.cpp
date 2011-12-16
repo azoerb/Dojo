@@ -25,7 +25,7 @@ SoundManager::SoundManager() {
     }
 
     // load music
-    for (int i = MUSIC_0; i <= MUSIC_2; i++) {
+    for (int i = MUSIC_0; i <= MUSIC_0; i++) {
         sf::Music* m = new sf::Music();
         std::stringstream s;
         s << i;
