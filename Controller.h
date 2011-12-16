@@ -7,6 +7,7 @@
 #include "Goal.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "SoundManager.h"
 #include <SFML/Graphics.hpp>
 
 enum GameState {
@@ -66,6 +67,10 @@ private:
 
 	Player* player;
 	Enemy* enemy;
+
+    #ifdef USE_SOUND
+    SoundManager* soundManager;
+    #endif
 
 	int numActionFrames;
     int gameState;

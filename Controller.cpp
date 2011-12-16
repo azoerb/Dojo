@@ -1,5 +1,6 @@
 #include "Controller.h"
 #include <math.h>
+#include <SFML/Audio.hpp>
 
 Controller::Controller() {
     window = new sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Dojo Hero");
@@ -22,12 +23,20 @@ Controller::Controller() {
 
     loadResources();
     initializeObjects();
+
+    #ifdef USE_SOUND
+    soundManager->playMusic(MUSIC_0);
+    #endif
 }
 
 Controller::~Controller() {
     if (window) { delete window; }
 	if (player) { delete player; }
 	if (enemy) { delete enemy; }
+
+    #ifdef USE_SOUND
+    if (soundManager) { delete soundManager; }
+    #endif
     
     for (int i = 0; i < basicActions.size(); i++) {
         if (basicActions.at(i)) { delete basicActions[i]; }
@@ -289,35 +298,59 @@ void Controller::processEvents() {
             switch(Event.Key.Code) {
                 case sf::Key::Q:
                     keyPresses[0] = true;
+                    #ifdef USE_SOUND
+                    if (gameState == GAME_PLAY)
+	                    soundManager->playSound(TARGET_SOUND_0);
+                    #endif
                     break;
                     
                 case sf::Key::W:
                     if (NUM_COLUMNS >= 2) {
                         keyPresses[1] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_1);
+                        #endif
                     }
                     break;
                     
                 case sf::Key::E:
                     if (NUM_COLUMNS >= 3) {
                         keyPresses[2] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_2);
+                        #endif
                     }
                     break;
                     
                 case sf::Key::R:
                     if (NUM_COLUMNS >= 4) {
                         keyPresses[3] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_3);
+                        #endif
                     }
                     break;
                     
                 case sf::Key::T:
                     if (NUM_COLUMNS >= 5) {
                         keyPresses[4] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_4);
+                        #endif
                     }
                     break;
                     
                 case sf::Key::Y:
                     if (NUM_COLUMNS >= 6) {
                         keyPresses[5] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_5);
+                        #endif
                     }
                     break;
                     
@@ -331,7 +364,7 @@ void Controller::processEvents() {
                         menuState = STATE_MAIN_MENU;
                     }
                     break;
-                    
+
                 case sf::Key::Space:
                     if (gameState == GAME_MENU) {
                         if (menuState == STATE_MAIN_MENU) {
@@ -496,9 +529,15 @@ void Controller::initializeObjects() {
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
 
+    // Add goals
     for (int i = 0; i < NUM_COLUMNS; i++) {
         goals.push_back(Goal(&goalImg, &goalAltImg, 528, i));
     }
+
+    // setup SoundManager
+    #ifdef USE_SOUND
+    soundManager = new SoundManager();
+    #endif
 }
 
 void Controller::addRandomSet() {
