@@ -14,7 +14,7 @@ private:
 	std::vector<Technique> techs;
 
 	// for the draw method, this may be a little inefficient
-	// but i'm tired right now and i suck at programming
+	// but i'm tired right now
 	std::vector<Technique> currTechs;
 
 	// the current type being shown
@@ -29,6 +29,9 @@ private:
 	sf::Image bg1;
 	sf::Image bg2;
 	sf::Image bg3;
+
+	// font used to draw techniques
+	sf::Font font;
 
 public:
 

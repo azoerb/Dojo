@@ -6,6 +6,14 @@ TechShop::TechShop() {
 	bg1.LoadFromFile("Shop/bg1.png");
 	bg2.LoadFromFile("Shop/bg2.png");
 	bg3.LoadFromFile("Shop/bg3.png");
+
+	/*
+	 * Font acquired from openfontlibrary.org
+	 * ANARCHY SANS BY DOCTOR WAT
+	 * http://openfontlibrary.org/font/anarchy-sans
+	 * Font is available for use under free license
+	 */
+	font.LoadFromFile("AnarchySans.otf");
 }
 
 TechShop::TechShop(std::vector<Technique> listOfTechs) {
@@ -15,6 +23,13 @@ TechShop::TechShop(std::vector<Technique> listOfTechs) {
 	bg1.LoadFromFile("Shop/bg1.png");
 	bg2.LoadFromFile("Shop/bg2.png");
 	bg3.LoadFromFile("Shop/bg3.png");
+	/*
+	 * Font acquired from openfontlibrary.org
+	 * ANARCHY SANS BY DOCTOR WAT
+	 * http://openfontlibrary.org/font/anarchy-sans
+	 * Font is available for use under free license
+	 */
+	font.LoadFromFile("AnarchySans.otf");
 }
 
 TechShop::~TechShop() {
@@ -90,7 +105,19 @@ void TechShop::drawShop(sf::RenderWindow* window) {
 		window->Draw(sp_bg);
 
 		// overlay the techniques onto the background
+		std::vector<Technique> tmp = TechShop::getPage(1);
 
+		// write techniques
+		for (int i = 0; i < tmp.size(); i++) {
+			Technique temp = tmp.at(i);
+
+			sf::String techn;
+			techn.SetText(temp.getName());
+			techn.SetFont(font);
+			techn.SetSize(24);
+			techn.Move(30.f, 80.f + i*40.f);
+			window->Draw(techn);
+		}
 
 	} else if (currType == INTERMEDIATE) {
 		// draw the tab
@@ -106,8 +133,19 @@ void TechShop::drawShop(sf::RenderWindow* window) {
 		window->Draw(sp_bg);
 
 		// overlay the techniques onto the background
+		std::vector<Technique> tmp = TechShop::getPage(2);
+		// write techniques
+		for (int i = 0; i < tmp.size(); i++) {
+			Technique temp = tmp.at(i);
 
-
+			sf::String techn;
+			techn.SetText(temp.getName());
+			techn.SetFont(font);
+			techn.SetSize(24);
+			techn.Move(30.f, 80.f + i*40.f);
+			window->Draw(techn);
+		}
+	
 	} else if (currType == ADVANCED) {
 		// draw the tab
 		sf::Sprite sp_tab;
@@ -122,7 +160,18 @@ void TechShop::drawShop(sf::RenderWindow* window) {
 		window->Draw(sp_bg);
 
 		// overlay the techniques onto the background
+		std::vector<Technique> tmp = TechShop::getPage(2);
+		// write techniques
+		for (int i = 0; i < tmp.size(); i++) {
+			Technique temp = tmp.at(i);
 
+			sf::String techn;
+			techn.SetText(temp.getName());
+			techn.SetFont(font);
+			techn.SetSize(24);
+			techn.Move(30.f, 80.f + i*40.f);
+			window->Draw(techn);
+		}
 	}
 }
 
