@@ -53,6 +53,9 @@ Controller::~Controller() {
 }
 
 void Controller::mainLoop() {
+    dojoLevel = 0;
+	lives = 3;
+	points = 0;
     while (window->IsOpened()) {
         processEvents();
         update();
@@ -83,16 +86,104 @@ void Controller::update() {
                 }
 
                  // check if player died
-                if(player->getHealth() <= 0) {
-                    gameState = GAME_MENU;
-                    window->Display();
+                if (player->getHealth() <= 0) {
+                    lives--;
+					//check to see if you have 3 lives left..
+					if (lives > 0) {
+						//we have two options, restart the level, or just continue - like I am.
+						player->setHealth(PLAYER_HEALTH);
+						//now display menu?
+					} else {	
+						lives = 3;
+						window->Clear();
+						gameOver.Resize(WINDOW_WIDTH, WINDOW_HEIGHT);
+						window->Draw(gameOver);
+						window->Display();
+						
+						sf::Event Event4;
+						
+						while (1) {
+							window->GetEvent(Event4);	
+							if (Event4.Type == sf::Event::KeyPressed && Event4.Key.Code == sf::Key::Space) {
+								break;
+                            }
+						}
+						gameState = GAME_MENU;
+					}
                 }
 
                 // check if enemy died
                 if(enemy->getHealth() <= 0) {
-                    //
-                    resetState(level+1);
-                    window->Display();
+                    //animation to next level
+					
+					//transition to shop
+					//insert shop stuff here..
+                    
+					
+					//check to see if you are in story mode
+					if(1) { 
+						switch (dojoLevel) {
+							case 0:
+								dojo.SetImage(dojoImg0);
+								break;
+							case 1:
+								dojo.SetImage(dojoImg1);
+								break;
+							case 2:
+								dojo.SetImage(dojoImg2);
+								break;
+							case 3:
+								dojo.SetImage(dojoImg3);
+								break;
+							case 4:
+								dojo.SetImage(dojoImg4);
+								break;
+							case 5:
+								dojo.SetImage(dojoImg5);
+								break;
+							case 6:
+								dojo.SetImage(dojoImg6);
+								break;
+							case 7:
+								dojo.SetImage(dojoImg7);
+								break;
+							case 8:
+								dojo.SetImage(dojoImg8);
+								break;
+							default:
+                                printf("Error - default dojo switch\n");
+								window->Close();
+								break;
+						}
+                        
+						window->Clear();
+						dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
+						window->Draw(dojo);
+						window->Display();
+						
+						/*sf::Event Event2; 
+						
+						while (1) {
+							window->GetEvent(Event2);	
+							if (Event2.Type == sf::Event::KeyPressed && Event2.Key.Code == sf::Key::Space) {
+								break;
+                            }
+						}*/
+                        
+						if(dojoLevel == 8) {
+							//going back to the main menu, the player won the game
+							gameState = GAME_MENU;
+							dojoLevel = 0;
+						} else {
+							//just go to the next level
+							dojoLevel++;
+							resetState(level+1);
+						}
+					} else if(0) { //endless mode
+						//go to next level
+						resetState(level+1);
+						window->Display();
+					}
                 }
             }
         }
@@ -107,7 +198,11 @@ void Controller::update() {
         // set to true when we encounter the first target in the respective column
         // to avoid checking far away targets
         // this fixes the problem of "missing" all targets in the column
-        bool found[4] = {false, false, false, false};
+        bool found[NUM_COLUMNS];
+        
+        for (int i = 0; i < NUM_COLUMNS; i++) {
+            found[i] = false;
+        }
 
         for (int i = 0; i < targetSets.size(); i++) {
             targetSets[i].update(elapsedTime);
@@ -244,6 +339,47 @@ void Controller::draw() {
         case GAME_PLAY:
             window->Clear();
             window->Draw(background);
+            window->Draw(coin);
+			std::stringstream type; 
+			type << points; 
+            
+            displayText(type.str(), WINDOW_WIDTH/2, WINDOW_HEIGHT - 50, window, 20, sf::Color(255,255,255));
+            
+            //draw lives accordingly 
+			switch(lives) {
+                case 3:
+                    life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
+                    window->Draw(life);
+                    life.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
+                    window->Draw(life);
+                    life.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
+                    window->Draw(life);
+                    break;
+                case 2:
+                    life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
+                    window->Draw(life);
+                    life.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
+                    window->Draw(life);
+                    death.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
+                    window->Draw(death);
+                    break;
+                case 1:
+                    life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
+                    window->Draw(life);
+                    death.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
+                    window->Draw(death);
+                    death.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
+                    window->Draw(death);
+                    break;
+                case 0:
+                    death.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
+                    window->Draw(death);
+                    death.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
+                    window->Draw(death);
+                    death.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
+                    window->Draw(death);
+                    break;
+            }
             
             if(numActionFrames > 0) {
                 basicActions[currentAnimation]->draw(window);
@@ -367,7 +503,9 @@ void Controller::processEvents() {
                     break;
 
                 case sf::Key::Space:
-                    if (gameState == GAME_MENU) {
+                    if (gameState == GAME_WAIT_FOR_INPUT) {
+                        gameState = GAME_PLAY;
+                    } else if (gameState == GAME_MENU) {
                         if (menuState == STATE_MAIN_MENU) {
                             if (menuSelectorPosition == 0) {
                                 // New Game Menu
@@ -382,6 +520,22 @@ void Controller::processEvents() {
                             // Start the game
                             resetMenuSelector();
                             menuState = STATE_MAIN_MENU;
+                            
+                            dojo.SetImage(dojoImgInit);		
+							window->Clear();
+							dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
+							window->Draw(dojo);
+							window->Display();
+                            
+							/*sf::Event Event3; 
+                            
+							while (1) {
+								window->GetEvent(Event3);	
+								if (Event3.Type == sf::Event::KeyPressed && Event3.Key.Code == sf::Key::Space) {
+									break;
+                                }
+							}*/
+                            
                             switch (menuSelectorPosition) {
                                 case 0:
                                     // Easy
@@ -435,10 +589,24 @@ void Controller::processEvents() {
 
 void Controller::loadResources() {
     if (!targetImg.LoadFromFile("target.png") ||
+        !lifeImg.LoadFromFile("Life.png") ||
+		!deathImg.LoadFromFile("Death.png") || 
         !goalImg.LoadFromFile("goal.png") ||
         !goalAltImg.LoadFromFile("goal-alt.png") ||
         !backgroundImg.LoadFromFile("background.png") ||
+        !gameOverImg.LoadFromFile("Dojo/Gameover.png") ||
+		!dojoImgInit.LoadFromFile("Dojo/Dojo_Init.png") || 
+        !dojoImg0.LoadFromFile("Dojo/Dojo_0.png") || 
+		!dojoImg1.LoadFromFile("Dojo/Dojo_1.png") || 
+		!dojoImg2.LoadFromFile("Dojo/Dojo_2.png") || 
+		!dojoImg3.LoadFromFile("Dojo/Dojo_3.png") || 
+		!dojoImg4.LoadFromFile("Dojo/Dojo_4.png") || 
+		!dojoImg5.LoadFromFile("Dojo/Dojo_5.png") || 
+		!dojoImg6.LoadFromFile("Dojo/Dojo_6.png") || 
+		!dojoImg7.LoadFromFile("Dojo/Dojo_7.png") || 
+		!dojoImg8.LoadFromFile("Dojo/Dojo_8.png") || 
         !starImg.LoadFromFile("star1-25.png") ||
+        !coinImg.LoadFromFile("coin.png") ||
         !menuNewGameImg.LoadFromFile("menu-new-game.png") ||
         !menuInstructionsImg.LoadFromFile("menu-instructions.png") ||
         !menuBeginnerImg.LoadFromFile("menu-beginner.png") ||
@@ -453,6 +621,11 @@ void Controller::loadResources() {
 void Controller::initializeObjects() {
 	srand(time(NULL));
 
+    coin.SetImage(coinImg);
+	life.SetImage(lifeImg);
+	death.SetImage(deathImg); 
+	gameOver.SetImage(gameOverImg);
+	dojo.SetImage(dojoImgInit);
     background.SetImage(backgroundImg);
     star.SetImage(starImg);
     menuNewGame.SetImage(menuNewGameImg);
@@ -470,6 +643,9 @@ void Controller::initializeObjects() {
     menuAdvanced.SetPosition(50, 150);
     
     menuSelector.SetPosition(10, 45);
+    
+    coin.SetPosition(WINDOW_WIDTH/2 - 40, WINDOW_HEIGHT - 55);
+	coin.Scale(.15,.15);
 
     // Add Kick animations
     Action* kick = new Action();
@@ -608,7 +784,7 @@ void Controller::resetState(int level) {
     player->setHealth(PLAYER_HEALTH);
     enemy->setHealth(PLAYER_HEALTH);
 
-    gameState = GAME_PLAY;
+    gameState = GAME_WAIT_FOR_INPUT;
     
     targetSets.clear();
     for (int i = 0; i < NUM_COLUMNS; i++) {

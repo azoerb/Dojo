@@ -18,7 +18,7 @@
 #define SPEED_START 125
 #define SPEED_INCREASE 25
 #define BLOCK_BOUND 50
-#define HIT_BOUND 90
+#define HIT_BOUND 80
 #define CRITICAL_BOUND 90
 
 // Menu constants

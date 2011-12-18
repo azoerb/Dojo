@@ -9,7 +9,6 @@ namespace sf {
     }
 
     Animation::~Animation() {
-        printf("~Animation()\n");
         clear();
     }
 
@@ -56,7 +55,6 @@ namespace sf {
     }
 
     void Animation::clear() {
-        printf("Animation::Clear()\n");
         // Make sure we free up the images' memory
         for (int i = 0; i < numImgs; i++) {
             if (images.at(i)) { delete images.at(i); }

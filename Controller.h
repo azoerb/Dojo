@@ -21,12 +21,30 @@ enum GameState {
 enum MenuState {
     STATE_MAIN_MENU = 0,
     STATE_NEW_GAME,
-    STATE_INSTRUCTIONS
+    STATE_INSTRUCTIONS,
+    STATE_INTRO
 };
 
 class Controller {
 private:
     sf::RenderWindow* window;
+    
+    sf::Image dojoImgInit;
+	sf::Image dojoImg0;
+	sf::Image dojoImg1;
+	sf::Image dojoImg2;
+	sf::Image dojoImg3;
+	sf::Image dojoImg4;
+	sf::Image dojoImg5;
+	sf::Image dojoImg6;
+	sf::Image dojoImg7;
+	sf::Image dojoImg8;
+    
+	sf::Image gameOverImg;
+	sf::Sprite gameOver;
+    
+	sf::Image lifeImg;
+	sf::Image deathImg;  
     
     sf::Image targetImg;
     sf::Image goalImg;
@@ -39,7 +57,12 @@ private:
     sf::Image menuBeginnerImg;
     sf::Image menuIntermediateImg;
     sf::Image menuAdvancedImg;
+    sf::Image coinImg;
     
+    sf::Sprite dojo;
+    sf::Sprite life;
+	sf::Sprite death;  
+	sf::Sprite coin;
     sf::Sprite background;
     sf::Sprite star;
     sf::Sprite loading;
@@ -58,6 +81,9 @@ private:
     std::vector<Goal> goals;
     
     int level;
+    int dojoLevel;
+	int lives;
+    int points;
     //sf::Animation* currentAnimation;
     int currentAnimation;
     int currentAnimationType;
