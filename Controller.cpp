@@ -12,6 +12,8 @@ Controller::Controller() {
 	criticalAttack = false;
 	criticalFrame = 0;
     
+    goToMenu = false;
+    
     gameState = GAME_MENU;
     menuState = STATE_MAIN_MENU;
 
@@ -99,16 +101,9 @@ void Controller::update() {
 						gameOver.Resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 						window->Draw(gameOver);
 						window->Display();
-						
-						sf::Event Event4;
-						
-						while (1) {
-							window->GetEvent(Event4);	
-							if (Event4.Type == sf::Event::KeyPressed && Event4.Key.Code == sf::Key::Space) {
-								break;
-                            }
-						}
-						gameState = GAME_MENU;
+
+						gameState = GAME_WAIT_FOR_INPUT;
+                        goToMenu = true;
 					}
                 }
 
@@ -160,19 +155,11 @@ void Controller::update() {
 						dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
 						window->Draw(dojo);
 						window->Display();
-						
-						/*sf::Event Event2; 
-						
-						while (1) {
-							window->GetEvent(Event2);	
-							if (Event2.Type == sf::Event::KeyPressed && Event2.Key.Code == sf::Key::Space) {
-								break;
-                            }
-						}*/
                         
 						if(dojoLevel == 8) {
 							//going back to the main menu, the player won the game
-							gameState = GAME_MENU;
+							gameState = GAME_WAIT_FOR_INPUT;
+                            goToMenu = true;
 							dojoLevel = 0;
 						} else {
 							//just go to the next level
@@ -504,7 +491,12 @@ void Controller::processEvents() {
 
                 case sf::Key::Space:
                     if (gameState == GAME_WAIT_FOR_INPUT) {
-                        gameState = GAME_PLAY;
+                        if (goToMenu) {
+                            gameState = GAME_MENU;
+                            goToMenu = false;
+                        } else {
+                            gameState = GAME_PLAY;
+                        }
                     } else if (gameState == GAME_MENU) {
                         if (menuState == STATE_MAIN_MENU) {
                             if (menuSelectorPosition == 0) {
@@ -526,15 +518,6 @@ void Controller::processEvents() {
 							dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
 							window->Draw(dojo);
 							window->Display();
-                            
-							/*sf::Event Event3; 
-                            
-							while (1) {
-								window->GetEvent(Event3);	
-								if (Event3.Type == sf::Event::KeyPressed && Event3.Key.Code == sf::Key::Space) {
-									break;
-                                }
-							}*/
                             
                             switch (menuSelectorPosition) {
                                 case 0:
@@ -669,7 +652,6 @@ void Controller::initializeObjects() {
     basicActions.push_back(headbutt);
 
     // Maybe load combos when they are purchased instead of now to speed up loading?
-    /*
     ComboAction* punchPunch = new ComboAction();
     punchPunch->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
     comboActions.push_back(punchPunch);
@@ -701,7 +683,23 @@ void Controller::initializeObjects() {
     ComboAction* headbuttKick = new ComboAction();
     headbuttKick->addAnimation("ComboActions/Headbutt_Kick_Combo/Headbutt_Kick_Combo", NUM_HEADBUTT_KICK_FRAMES);
     comboActions.push_back(headbuttKick);
-    */
+     
+    ComboAction* slideTackle = new ComboAction();
+    slideTackle->addAnimation("ComboActions/Slide_Tackle/Slide_Tackle", NUM_SLIDE_TACKLE_FRAMES);
+    comboActions.push_back(slideTackle);
+    
+    ComboAction* cartwheel = new ComboAction();
+    cartwheel->addAnimation("ComboActions/Cartwheel/Cartwheel", NUM_CARTWHEEL_FRAMES);
+    comboActions.push_back(cartwheel);
+    
+    ComboAction* punchBehindPunch = new ComboAction();
+    punchBehindPunch->addAnimation("ComboActions/Punch_Behind_Punch/Punch_Behind_Punch", NUM_PUNCH_BEHIND_PUNCH_FRAMES);
+    comboActions.push_back(punchBehindPunch);
+    
+    ComboAction* jumpKick = new ComboAction();
+    jumpKick->addAnimation("ComboActions/Jump_Kick/Jump_Kick", NUM_JUMP_KICK_FRAMES);
+    comboActions.push_back(jumpKick);
+
     
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);

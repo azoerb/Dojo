@@ -90,6 +90,8 @@ private:
 
 	bool criticalAttack;
 	int criticalFrame;
+    
+    bool goToMenu;
 
 	Player* player;
 	Enemy* enemy;
