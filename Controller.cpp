@@ -651,7 +651,7 @@ void Controller::initializeObjects() {
     headbutt->addAnimation(ANIMATION_COUNTER, "Actions/Headbutt_Counter/Headbutt_Counter", NUM_HEADBUTT_COUNTER_FRAMES);
     basicActions.push_back(headbutt);
 
-    // Maybe load combos when they are purchased instead of now to speed up loading?
+    /*/ Maybe load combos when they are purchased instead of now to speed up loading?
     ComboAction* punchPunch = new ComboAction();
     punchPunch->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
     comboActions.push_back(punchPunch);
@@ -699,10 +699,14 @@ void Controller::initializeObjects() {
     ComboAction* jumpKick = new ComboAction();
     jumpKick->addAnimation("ComboActions/Jump_Kick/Jump_Kick", NUM_JUMP_KICK_FRAMES);
     comboActions.push_back(jumpKick);
-
+*/
     
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
+    
+    // Add transition animations
+    climbAnimation.init("Transitions/Climb/Climb", NUM_CLIMB_FRAMES);
+    enterDojoAnimation.init("Transitions/Enter_Dojo/Enter_Dojo", NUM_ENTER_DOJO_FRAMES);
 
     // Add goals
     for (int i = 0; i < NUM_COLUMNS; i++) {

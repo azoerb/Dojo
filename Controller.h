@@ -74,6 +74,9 @@ private:
     sf::Sprite menuAdvanced;
     
     sf::Animation idleAnimation;
+    sf::Animation climbAnimation;
+    sf::Animation enterDojoAnimation;
+    
     std::vector<Action*> basicActions;
     std::vector<Action*> specialActions;
     std::vector<ComboAction*> comboActions;

@@ -1,77 +1,80 @@
 #pragma once
 
 // Window constants
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
 
 // Column constants
-#define COLUMN_WIDTH 64
-#define NUM_COLUMNS 4
+const int COLUMN_WIDTH = 64;
+const int NUM_COLUMNS = 4;
 
 // TargetSet constants
-#define MIN_NUM_TARGETS 3
-#define MAX_NUM_TARGETS 15
-#define TARGET_SPEED 300
-#define SPEED_RATIO .5
-#define MAX_HIT_DISTANCE 40
-#define MISS_PENALTY -5
-#define SPEED_START 125
-#define SPEED_INCREASE 25
-#define BLOCK_BOUND 50
-#define HIT_BOUND 80
-#define CRITICAL_BOUND 90
+const int MIN_NUM_TARGETS = 3;
+const int MAX_NUM_TARGETS = 15;
+const int TARGET_SPEED = 300;
+const float SPEED_RATIO = .5;
+const int MAX_HIT_DISTANCE = 40;
+const int MISS_PENALTY = -5;
+const int SPEED_START = 125;
+const int SPEED_INCREASE = 25;
+const int BLOCK_BOUND = 50;
+const int HIT_BOUND = 80;
+const int CRITICAL_BOUND = 90;
 
 // Menu constants
-#define NUM_MENU_ITEMS 2
-#define NUM_DIFFICULTY_LEVELS 3
+const int NUM_MENU_ITEMS = 2;
+const int NUM_DIFFICULTY_LEVELS = 3;
 
 // Special move constants
-#define SPECIAL_PERCENTAGE 10
+const int SPECIAL_PERCENTAGE = 10;
 
 // Goal animation constants
-#define HIT_FRAMES 10
-#define OK_FRAMES 10
-#define ROTATE_FRAMES 10
-#define HIT_RATIO 0.5
-#define OK_RATIO 0.5
+const int HIT_FRAMES = 10;
+const int OK_FRAMES = 10;
+const int ROTATE_FRAMES = 10;
+const float HIT_RATIO = 0.5;
+const float OK_RATIO = 0.5;
 
 // Damage constants
-#define BASIC_ACTION_DAMAGE 10
-#define CRITICAL_ACTION_DAMAGE 20
-#define COMBO_ACTION_DAMAGE 20
+const int BASIC_ACTION_DAMAGE = 10;
+const int CRITICAL_ACTION_DAMAGE = 20;
+const int COMBO_ACTION_DAMAGE = 20;
 
 // Action animation constants
-#define NUM_PASSES 3
+const int NUM_PASSES = 3;
 
 // Character constants
-#define BASIC_ENEMY_HEALTH 100
-#define PLAYER_HEALTH 70
+const int BASIC_ENEMY_HEALTH = 100;
+const int PLAYER_HEALTH = 70;
 
-#define NUM_IDLE_FRAMES 5
-#define NUM_CRITICAL_FRAMES 100
+const int NUM_IDLE_FRAMES = 5;
+const int NUM_CRITICAL_FRAMES = 100;
 
-#define NUM_KICK_HIT_FRAMES 35
-#define NUM_KICK_BLOCK_FRAMES 30
-#define NUM_KICK_COUNTER_FRAMES 44
+const int NUM_KICK_HIT_FRAMES = 35;
+const int NUM_KICK_BLOCK_FRAMES = 30;
+const int NUM_KICK_COUNTER_FRAMES = 44;
 
-#define NUM_PUNCH_HIT_FRAMES 21
-#define NUM_PUNCH_BLOCK_FRAMES 18
-#define NUM_PUNCH_COUNTER_FRAMES 22
+const int NUM_PUNCH_HIT_FRAMES = 21;
+const int NUM_PUNCH_BLOCK_FRAMES = 18;
+const int NUM_PUNCH_COUNTER_FRAMES = 22;
 
-#define NUM_HEADBUTT_HIT_FRAMES 19
-#define NUM_HEADBUTT_BLOCK_FRAMES 17
-#define NUM_HEADBUTT_COUNTER_FRAMES 22
+const int NUM_HEADBUTT_HIT_FRAMES = 19;
+const int NUM_HEADBUTT_BLOCK_FRAMES = 17;
+const int NUM_HEADBUTT_COUNTER_FRAMES = 22;
 
-#define NUM_PUNCH_PUNCH_FRAMES 31
-#define NUM_PUNCH_KICK_FRAMES 37
-#define NUM_PUNCH_HEADBUTT_FRAMES 32
-#define NUM_KICK_PUNCH_FRAMES 41
-#define NUM_KICK_KICK_FRAMES 57
-#define NUM_KICK_HEADBUTT_FRAMES 44
-#define NUM_HEADBUTT_PUNCH_FRAMES 26
-#define NUM_HEADBUTT_KICK_FRAMES 33
+const int NUM_PUNCH_PUNCH_FRAMES = 31;
+const int NUM_PUNCH_KICK_FRAMES = 37;
+const int NUM_PUNCH_HEADBUTT_FRAMES = 32;
+const int NUM_KICK_PUNCH_FRAMES = 41;
+const int NUM_KICK_KICK_FRAMES = 57;
+const int NUM_KICK_HEADBUTT_FRAMES = 44;
+const int NUM_HEADBUTT_PUNCH_FRAMES = 26;
+const int NUM_HEADBUTT_KICK_FRAMES = 33;
 
-#define NUM_SLIDE_TACKLE_FRAMES 39
-#define NUM_CARTWHEEL_FRAMES 53
-#define NUM_PUNCH_BEHIND_PUNCH_FRAMES 44
-#define NUM_JUMP_KICK_FRAMES 50
+const int NUM_SLIDE_TACKLE_FRAMES = 39;
+const int NUM_CARTWHEEL_FRAMES = 53;
+const int NUM_PUNCH_BEHIND_PUNCH_FRAMES = 44;
+const int NUM_JUMP_KICK_FRAMES = 50;
+
+const int NUM_CLIMB_FRAMES = 23;
+const int NUM_ENTER_DOJO_FRAMES = 33;
