@@ -110,6 +110,8 @@ private:
     bool shouldDraw;
 
     bool keyPresses[NUM_COLUMNS];
+
+    int currentNumColumns;
     
     float elapsedTime;
 

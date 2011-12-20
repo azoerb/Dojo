@@ -30,12 +30,23 @@ Goal::Goal(sf::Image* img1, sf::Image* img2, int goalPosition, int column) : Col
         case 5:
             altSprite.SetColor(sf::Color(0, 255, 255, 255));
             break;
+        case 6:
+            altSprite.SetColor(sf::Color(255, 255, 255, 255));
+            break;
+        case 7:
+            altSprite.SetColor(sf::Color(128, 0, 128, 255));
+            break;
         default:
             break;
     }
 
-    sprite.SetPosition((column + 1) * COLUMN_WIDTH, goalPosition);
-    altSprite.SetPosition((column + 1) * COLUMN_WIDTH, goalPosition);
+     if (column < NUM_COLUMNS_LEFT) {
+        sprite.SetPosition(vec2((column + 1) * COLUMN_WIDTH, goalPosition));
+        altSprite.SetPosition(vec2((column + 1) * COLUMN_WIDTH, goalPosition));
+    } else {
+        sprite.SetPosition(vec2(1.f * WINDOW_WIDTH - (NUM_COLUMNS - column) * COLUMN_WIDTH, goalPosition));
+        altSprite.SetPosition(vec2(1.f * WINDOW_WIDTH - (NUM_COLUMNS - column) * COLUMN_WIDTH, goalPosition));
+    }
 }
 
 void Goal::draw(sf::RenderTarget* target) {

@@ -11,6 +11,7 @@ Controller::Controller() {
 
 	criticalAttack = false;
 	criticalFrame = 0;
+    currentNumColumns = 4;
     
     goToMenu = false;
     
@@ -186,7 +187,6 @@ void Controller::update() {
         // to avoid checking far away targets
         // this fixes the problem of "missing" all targets in the column
         bool found[NUM_COLUMNS];
-        
         for (int i = 0; i < NUM_COLUMNS; i++) {
             found[i] = false;
         }
@@ -285,7 +285,7 @@ void Controller::update() {
             }
 
             // Check if key is pressed and there is no target to hit
-            for(int i = 0; i < NUM_COLUMNS; i++) {
+            for(int i = 0; i < currentNumColumns; i++) {
                 if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
 					targetSets[0].changeAccuracy(MISS_PENALTY);
                     goals[i].goalMiss();
@@ -429,7 +429,7 @@ void Controller::processEvents() {
                     break;
                     
                 case sf::Key::W:
-                    if (NUM_COLUMNS >= 2) {
+                    if (currentNumColumns >= 2) {
                         keyPresses[1] = true;
                         #ifdef USE_SOUND
                         if (gameState == GAME_PLAY)
@@ -439,7 +439,7 @@ void Controller::processEvents() {
                     break;
                     
                 case sf::Key::E:
-                    if (NUM_COLUMNS >= 3) {
+                    if (currentNumColumns>= 3) {
                         keyPresses[2] = true;
                         #ifdef USE_SOUND
                         if (gameState == GAME_PLAY)
@@ -449,7 +449,7 @@ void Controller::processEvents() {
                     break;
                     
                 case sf::Key::R:
-                    if (NUM_COLUMNS >= 4) {
+                    if (currentNumColumns >= 4) {
                         keyPresses[3] = true;
                         #ifdef USE_SOUND
                         if (gameState == GAME_PLAY)
@@ -458,8 +458,8 @@ void Controller::processEvents() {
                     }
                     break;
                     
-                case sf::Key::T:
-                    if (NUM_COLUMNS >= 5) {
+                case sf::Key::U:
+                    if (currentNumColumns >= 5) {
                         keyPresses[4] = true;
                         #ifdef USE_SOUND
                         if (gameState == GAME_PLAY)
@@ -468,8 +468,8 @@ void Controller::processEvents() {
                     }
                     break;
                     
-                case sf::Key::Y:
-                    if (NUM_COLUMNS >= 6) {
+                case sf::Key::I:
+                    if (currentNumColumns >= 6) {
                         keyPresses[5] = true;
                         #ifdef USE_SOUND
                         if (gameState == GAME_PLAY)
@@ -477,7 +477,27 @@ void Controller::processEvents() {
                         #endif
                     }
                     break;
-                    
+
+                case sf::Key::O:
+                    if (currentNumColumns >= 7) {
+                        keyPresses[6] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_6);
+                        #endif
+                    }
+                    break;
+
+                case sf::Key::P:
+                    if (currentNumColumns >= 8) {
+                        keyPresses[7] = true;
+                        #ifdef USE_SOUND
+                        if (gameState == GAME_PLAY)
+	                        soundManager->playSound(TARGET_SOUND_7);
+                        #endif
+                    }
+                    break;
+
                 case sf::Key::Escape:
                     if(gameState == GAME_PAUSE) {
                         gameState = GAME_PLAY;
@@ -708,11 +728,6 @@ void Controller::initializeObjects() {
     climbAnimation.init("Transitions/Climb/Climb", NUM_CLIMB_FRAMES);
     enterDojoAnimation.init("Transitions/Enter_Dojo/Enter_Dojo", NUM_ENTER_DOJO_FRAMES);
 
-    // Add goals
-    for (int i = 0; i < NUM_COLUMNS; i++) {
-        goals.push_back(Goal(&goalImg, &goalAltImg, 528, i));
-    }
-
     // setup SoundManager
     #ifdef USE_SOUND
     soundManager = new SoundManager();
@@ -731,19 +746,19 @@ void Controller::addRandomSet() {
 	targetSets.push_back(TargetSet());
     int y = 0;
 	for(int i = 0; i < numTargets; i++) {
-        int col = rand() % NUM_COLUMNS;
+        int col = rand() % currentNumColumns;
 		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, col, y));
 
         // add doubles, triples, quadruples
         /*
         if(level > 2 && rand() % 10 < 2) {
-            targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+1) % NUM_COLUMNS, y));
+            targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+1) % currentNumColumns, y));
 
             if(level > 4 && rand() % 10 < 5) {
-                targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+2) % NUM_COLUMNS, y));
+                targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+2) % currentNumColumns, y));
 
                 if(level > 6 && rand() % 10 < 5) {
-                    targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+3) % NUM_COLUMNS, y));
+                    targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, (col+3) % currentNumColumns, y));
                 }
             }
         }
@@ -758,7 +773,7 @@ void Controller::randomizeGoals() {
 
     int pos = 250 + rand() % 250;
 
-    for(int i = 0; i < NUM_COLUMNS; i++) {
+    for(int i = 0; i < currentNumColumns; i++) {
         goals.push_back(Goal(&goalImg, &goalAltImg, pos, i));
     }
 }
@@ -784,7 +799,13 @@ void Controller::resetState(int level) {
 	numActionFrames = 0;
 
     player->setHealth(PLAYER_HEALTH);
-    enemy->setHealth(PLAYER_HEALTH);
+    enemy->setHealth(BASIC_ENEMY_HEALTH);
+
+    // Reset goals
+    goals.clear();
+    for (int i = 0; i < currentNumColumns; i++) {
+        goals.push_back(Goal(&goalImg, &goalAltImg, 528, i));
+    }
 
     gameState = GAME_WAIT_FOR_INPUT;
     

@@ -6,7 +6,11 @@
 Target::Target(sf::Image* img, int speed, int column, int offset) : ColumnObject(img, column) {
     this->speed = speed;
     
-    sprite.SetPosition(vec2((column + 1) * COLUMN_WIDTH, -(size + offset)));
+    if (column < NUM_COLUMNS_LEFT) {
+        sprite.SetPosition(vec2((column + 1) * COLUMN_WIDTH, -(size + offset)));
+    } else {
+        sprite.SetPosition(vec2(1.f * WINDOW_WIDTH - (NUM_COLUMNS - column) * COLUMN_WIDTH, -(size + offset)));
+    }
 }
 
 void Target::update(float elapsedTime) {

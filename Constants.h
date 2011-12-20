@@ -5,8 +5,9 @@ const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
 // Column constants
-const int COLUMN_WIDTH = 64;
-const int NUM_COLUMNS = 4;
+#define COLUMN_WIDTH 64
+#define NUM_COLUMNS_LEFT 4
+#define NUM_COLUMNS 8
 
 // TargetSet constants
 const int MIN_NUM_TARGETS = 3;

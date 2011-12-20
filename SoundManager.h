@@ -13,6 +13,19 @@
 #include <SFML/Audio.hpp>
 #include <sstream>
 
+/*
+Sources for sound files:
+
+Music:
+http://incompetech.com/m/c/royalty-free/index.html?keywords=proposition
+http://incompetech.com/m/c/royalty-free/index.html?keywords=Arcane
+http://incompetech.com/m/c/royalty-free/index.html?keywords=Stoneworld
+
+Sound Effects:
+Created using Audacity
+
+*/
+
 enum soundType {
     TARGET_SOUND_0 = 0,
     TARGET_SOUND_1,

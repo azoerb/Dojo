@@ -4,7 +4,7 @@
 
 SoundManager::SoundManager() {
 	
-    std::string soundBase = "Sounds/sound2-short";
+    std::string soundBase = "Sounds/target";
     std::string musicBase = "Music/music";
 
     // load target sounds
