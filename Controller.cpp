@@ -12,6 +12,7 @@ Controller::Controller() {
 	criticalAttack = false;
 	criticalFrame = 0;
     currentNumColumns = 4;
+    hitCounter = 0;
     
     goToMenu = false;
     
@@ -207,12 +208,14 @@ void Controller::update() {
                             found[col] = true;
 							targetSets[i].changeAccuracy(MISS_PENALTY);
                             goals[col].goalMiss();
+                            hitCounter = 0;
                         }
                     } else {
                         found[col] = true;
                         targetSets[i].changeAccuracy(result);
                         targetSets[i].removeTarget(j);
                         hit = true;
+                        hitCounter++;
 
 						if (result >= HIT_BOUND) {
                             goals[col].goalHit(true);
@@ -230,6 +233,7 @@ void Controller::update() {
                 if (!hit && targets->at(j).getPosition().y > WINDOW_HEIGHT + targets->at(j).getSize()) {
                     targetSets[i].changeAccuracy(MISS_PENALTY);
                     targetSets[i].removeTarget(j);
+                    hitCounter = 0;
                 }
             }
 
@@ -289,6 +293,7 @@ void Controller::update() {
                 if(keyPresses[i] && !found[i] && targetSets.size() > 0) {
 					targetSets[0].changeAccuracy(MISS_PENALTY);
                     goals[i].goalMiss();
+                    hitCounter = 0;
                 }
             }
         }
@@ -330,9 +335,14 @@ void Controller::draw() {
 			std::stringstream type; 
 			type << points; 
             
-            displayText(type.str(), WINDOW_WIDTH/2, WINDOW_HEIGHT - 50, window, 20, sf::Color(255,255,255));
+            displayText(type.str(), WINDOW_WIDTH/2 + 40, WINDOW_HEIGHT - 35, window, 20, sf::Color(255,255,255));
             
-            //draw lives accordingly 
+            //draw lives accordingly
+            for(int i = 0; i < lives; i++) {
+                heart.SetPosition(WINDOW_WIDTH/2 - 105 + 35*i, WINDOW_HEIGHT - 40);
+                window->Draw(heart);
+            }
+            /*
 			switch(lives) {
                 case 3:
                     life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
@@ -367,6 +377,13 @@ void Controller::draw() {
                     window->Draw(death);
                     break;
             }
+            */
+
+            // draw hit counter
+            std::stringstream count;
+            count << hitCounter;
+
+            displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 100, WINDOW_HEIGHT - 85, window, 32, sf::Color(255, 0, 0), true);
             
             if(numActionFrames > 0) {
                 basicActions[currentAnimation]->draw(window);
@@ -592,8 +609,9 @@ void Controller::processEvents() {
 
 void Controller::loadResources() {
     if (!targetImg.LoadFromFile("target.png") ||
-        !lifeImg.LoadFromFile("Life.png") ||
-		!deathImg.LoadFromFile("Death.png") || 
+        //!lifeImg.LoadFromFile("Life.png") ||
+		//!deathImg.LoadFromFile("Death.png") ||
+        !heartImg.LoadFromFile("heart.png") ||
         !goalImg.LoadFromFile("goal.png") ||
         !goalAltImg.LoadFromFile("goal-alt.png") ||
         !backgroundImg.LoadFromFile("background.png") ||
@@ -625,8 +643,9 @@ void Controller::initializeObjects() {
 	srand(time(NULL));
 
     coin.SetImage(coinImg);
-	life.SetImage(lifeImg);
-	death.SetImage(deathImg); 
+	//life.SetImage(lifeImg);
+	//death.SetImage(deathImg);
+    heart.SetImage(heartImg);
 	gameOver.SetImage(gameOverImg);
 	dojo.SetImage(dojoImgInit);
     background.SetImage(backgroundImg);
@@ -647,7 +666,7 @@ void Controller::initializeObjects() {
     
     menuSelector.SetPosition(10, 45);
     
-    coin.SetPosition(WINDOW_WIDTH/2 - 40, WINDOW_HEIGHT - 55);
+    coin.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 40);
 	coin.Scale(.15,.15);
 
     // Add Kick animations
@@ -779,7 +798,6 @@ void Controller::randomizeGoals() {
 }
 
 void Controller::displayText(std::string message, int x, int y, sf::RenderTarget* target, int size, sf::Color color, bool bold) {
-    sf::String text;
     text.SetText(message);
     text.SetColor(color);
     text.SetFont(sf::Font::GetDefaultFont());

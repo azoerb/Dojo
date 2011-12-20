@@ -44,7 +44,8 @@ private:
 	sf::Sprite gameOver;
     
 	sf::Image lifeImg;
-	sf::Image deathImg;  
+	sf::Image deathImg;
+    sf::Image heartImg;
     
     sf::Image targetImg;
     sf::Image goalImg;
@@ -61,7 +62,8 @@ private:
     
     sf::Sprite dojo;
     sf::Sprite life;
-	sf::Sprite death;  
+	sf::Sprite death;
+    sf::Sprite heart;
 	sf::Sprite coin;
     sf::Sprite background;
     sf::Sprite star;
@@ -82,11 +84,14 @@ private:
     std::vector<ComboAction*> comboActions;
     std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
+
+    sf::String text;
     
     int level;
     int dojoLevel;
 	int lives;
     int points;
+    int hitCounter;
     //sf::Animation* currentAnimation;
     int currentAnimation;
     int currentAnimationType;
