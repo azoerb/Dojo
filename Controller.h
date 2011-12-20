@@ -88,6 +88,7 @@ private:
     sf::String text;
     
     int level;
+    float difficultyLevel;
     int dojoLevel;
 	int lives;
     int points;

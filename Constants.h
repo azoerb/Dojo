@@ -26,6 +26,9 @@ const int CRITICAL_BOUND = 90;
 const int NUM_MENU_ITEMS = 2;
 const int NUM_DIFFICULTY_LEVELS = 3;
 
+const float DIFFICULTY_MEDIUM = 1.2;
+const float DIFFICULTY_HARD = 1.4;
+
 // Special move constants
 const int SPECIAL_PERCENTAGE = 10;
 
@@ -48,7 +51,7 @@ const int NUM_PASSES = 3;
 const int BASIC_ENEMY_HEALTH = 100;
 const int PLAYER_HEALTH = 70;
 
-const int NUM_IDLE_FRAMES = 5;
+const int NUM_IDLE_FRAMES = 13;
 const int NUM_CRITICAL_FRAMES = 100;
 
 const int NUM_KICK_HIT_FRAMES = 35;

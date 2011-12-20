@@ -217,7 +217,7 @@ void Controller::update() {
                         hit = true;
                         hitCounter++;
 
-						if (result >= HIT_BOUND) {
+						if (result >= HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
                             goals[col].goalHit(true);
                         } else {
                             goals[col].goalHit(false);
@@ -243,16 +243,15 @@ void Controller::update() {
                 float accuracy = targetSets[i].getAccuracy();
 
                 currentAnimation = rand() % basicActions.size();
-                
-                // TODO: Still want these to be modified by the current level.
-                if (accuracy < BLOCK_BOUND) {
+                                
+                if (accuracy < BLOCK_BOUND + ((difficultyLevel - 1) * (100 - BLOCK_BOUND))) {
                     currentAnimationType = ANIMATION_COUNTER;
-                } else if (accuracy < HIT_BOUND) {
+                } else if (accuracy < HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
                     currentAnimationType = ANIMATION_BLOCK;
                 } else {
                     currentAnimationType = ANIMATION_HIT;
 
-					if (accuracy > CRITICAL_BOUND) {
+					if (accuracy > CRITICAL_BOUND + ((difficultyLevel - 1) * (100 - CRITICAL_BOUND))) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
                         criticalAttack = true;
 					}
@@ -547,7 +546,6 @@ void Controller::processEvents() {
                             }
                         } else if (menuState == STATE_NEW_GAME) {
                             // Start the game
-                            resetMenuSelector();
                             menuState = STATE_MAIN_MENU;
                             
                             dojo.SetImage(dojoImgInit);		
@@ -559,17 +557,21 @@ void Controller::processEvents() {
                             switch (menuSelectorPosition) {
                                 case 0:
                                     // Easy
+                                    difficultyLevel = 1.0;
                                     resetState(1);
                                     break;
                                 case 1:
                                     // Medium
+                                    difficultyLevel = DIFFICULTY_MEDIUM;
                                     resetState(1);
                                     break;
                                 case 2:
                                     // Hard
+                                    difficultyLevel = DIFFICULTY_HARD;
                                     resetState(1);
                                     break;
                             }
+                            resetMenuSelector();
                         } else {
                             // Back to Main Menu
                             resetMenuSelector();
@@ -760,7 +762,7 @@ void Controller::addRandomSet() {
     if(numTargets > MAX_NUM_TARGETS) {
         numTargets = MAX_NUM_TARGETS;
     }
-    int speed = SPEED_START + (level * SPEED_INCREASE);
+    int speed = SPEED_START + ((difficultyLevel - 1) * 200) + (level * SPEED_INCREASE);
 
 	targetSets.push_back(TargetSet());
     int y = 0;
