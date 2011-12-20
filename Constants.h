@@ -5,9 +5,9 @@ const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
 // Column constants
-#define COLUMN_WIDTH 64
-#define NUM_COLUMNS_LEFT 4
-#define NUM_COLUMNS 8
+const int COLUMN_WIDTH = 64;
+const int NUM_COLUMNS_LEFT = 4;
+const int NUM_COLUMNS = 8;
 
 // TargetSet constants
 const int MIN_NUM_TARGETS = 3;
@@ -23,7 +23,7 @@ const int HIT_BOUND = 80;
 const int CRITICAL_BOUND = 90;
 
 // Menu constants
-const int NUM_MENU_ITEMS = 2;
+const int NUM_MENU_ITEMS = 3;
 const int NUM_DIFFICULTY_LEVELS = 3;
 
 const float DIFFICULTY_MEDIUM = 1.2;
@@ -48,7 +48,7 @@ const int COMBO_ACTION_DAMAGE = 20;
 const int NUM_PASSES = 3;
 
 // Character constants
-const int BASIC_ENEMY_HEALTH = 100;
+const int BASIC_ENEMY_HEALTH = 70;
 const int PLAYER_HEALTH = 70;
 
 const int NUM_IDLE_FRAMES = 13;

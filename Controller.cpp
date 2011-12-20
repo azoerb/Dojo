@@ -16,8 +16,10 @@ Controller::Controller() {
     
     goToMenu = false;
     
+    endlessMode = false;
+    
     gameState = GAME_MENU;
-    menuState = STATE_MAIN_MENU;
+    menuState = STATE_INSTRUCTIONS;
 
     // display loading image
     loadingImg.LoadFromFile("loading.png");
@@ -118,7 +120,7 @@ void Controller::update() {
                     
 					
 					//check to see if you are in story mode
-					if(1) { 
+					if(!endlessMode) { 
 						switch (dojoLevel) {
 							case 0:
 								dojo.SetImage(dojoImg0);
@@ -168,10 +170,11 @@ void Controller::update() {
 							dojoLevel++;
 							resetState(level+1);
 						}
-					} else if(0) { //endless mode
+					} else { //endless mode
 						//go to next level
 						resetState(level+1);
 						window->Display();
+                        gameState = GAME_PLAY;
 					}
                 }
             }
@@ -305,7 +308,8 @@ void Controller::draw() {
             switch (menuState) {
                 case STATE_MAIN_MENU:
                     window->Clear();
-                    window->Draw(menuNewGame);
+                    window->Draw(menuStoryMode);
+                    window->Draw(menuEndless);
                     window->Draw(menuInstructions);
                     window->Draw(menuSelector);
                     window->Display();
@@ -323,6 +327,9 @@ void Controller::draw() {
                 case STATE_INSTRUCTIONS:
                     window->Clear();
                     displayText("Use QWER keys to Play", 180, 200, window, 40, sf::Color(255, 255, 255));
+                    displayText("Try to hit each target in the center", 80, 250, window, 40, sf::Color(255, 255, 255));
+                    displayText("Escape to pause", 230, 300, window, 40, sf::Color(255, 255, 255));
+                    displayText("Space and arrow keys to navigate menus", 30, 350, window, 40, sf::Color(255, 255, 255));
                     window->Display();
                     break;
             }
@@ -330,59 +337,25 @@ void Controller::draw() {
         case GAME_PLAY:
             window->Clear();
             window->Draw(background);
-            window->Draw(coin);
-			std::stringstream type; 
-			type << points; 
+            if (!endlessMode) {
+                window->Draw(coin);
             
-            displayText(type.str(), WINDOW_WIDTH/2 + 40, WINDOW_HEIGHT - 35, window, 20, sf::Color(255,255,255));
-            
+                std::stringstream type; 
+                type << points; 
+                
+                displayText(type.str(), WINDOW_WIDTH/2 + 60, WINDOW_HEIGHT - 40, window, 20, sf::Color(255,255,255));
+            }
             //draw lives accordingly
             for(int i = 0; i < lives; i++) {
-                heart.SetPosition(WINDOW_WIDTH/2 - 105 + 35*i, WINDOW_HEIGHT - 40);
+                heart.SetPosition(endlessMode * 40 + WINDOW_WIDTH/2 - 105 + 35*i, WINDOW_HEIGHT - 40);
                 window->Draw(heart);
             }
-            /*
-			switch(lives) {
-                case 3:
-                    life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
-                    window->Draw(life);
-                    life.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
-                    window->Draw(life);
-                    life.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
-                    window->Draw(life);
-                    break;
-                case 2:
-                    life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
-                    window->Draw(life);
-                    life.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
-                    window->Draw(life);
-                    death.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
-                    window->Draw(death);
-                    break;
-                case 1:
-                    life.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
-                    window->Draw(life);
-                    death.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
-                    window->Draw(death);
-                    death.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
-                    window->Draw(death);
-                    break;
-                case 0:
-                    death.SetPosition(WINDOW_WIDTH/2 - 35, WINDOW_HEIGHT - 90);
-                    window->Draw(death);
-                    death.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 90);
-                    window->Draw(death);
-                    death.SetPosition(WINDOW_WIDTH/2 + 35, WINDOW_HEIGHT - 90);
-                    window->Draw(death);
-                    break;
-            }
-            */
 
             // draw hit counter
             std::stringstream count;
             count << hitCounter;
 
-            displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 100, WINDOW_HEIGHT - 85, window, 32, sf::Color(255, 0, 0), true);
+            displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 0, 0), true);
             
             if(numActionFrames > 0) {
                 basicActions[currentAnimation]->draw(window);
@@ -524,6 +497,12 @@ void Controller::processEvents() {
                         menuState = STATE_MAIN_MENU;
                     }
                     break;
+                    
+                case sf::Key::Return:
+                    gameState = GAME_MENU;
+                    lives = 3;
+                    points = 0;
+                    break;
 
                 case sf::Key::Space:
                     if (gameState == GAME_WAIT_FOR_INPUT) {
@@ -535,24 +514,25 @@ void Controller::processEvents() {
                         }
                     } else if (gameState == GAME_MENU) {
                         if (menuState == STATE_MAIN_MENU) {
-                            if (menuSelectorPosition == 0) {
-                                // New Game Menu
-                                resetMenuSelector();
-                                menuState = STATE_NEW_GAME;
-                            } else {
-                                // Instructions Menu
-                                resetMenuSelector();
-                                menuState = STATE_INSTRUCTIONS;
+                            switch (menuSelectorPosition) {
+                                case 0: // Story mode
+                                    resetMenuSelector();
+                                    endlessMode = false;
+                                    menuState = STATE_NEW_GAME;
+                                    break;
+                                case 1: // Endless mode
+                                    resetMenuSelector();
+                                    endlessMode = true;
+                                    menuState = STATE_NEW_GAME;
+                                    break;
+                                case 2: // Instructions Menu
+                                    resetMenuSelector();
+                                    menuState = STATE_INSTRUCTIONS;
+                                    break;
                             }
                         } else if (menuState == STATE_NEW_GAME) {
                             // Start the game
                             menuState = STATE_MAIN_MENU;
-                            
-                            dojo.SetImage(dojoImgInit);		
-							window->Clear();
-							dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
-							window->Draw(dojo);
-							window->Display();
                             
                             switch (menuSelectorPosition) {
                                 case 0:
@@ -571,6 +551,16 @@ void Controller::processEvents() {
                                     resetState(1);
                                     break;
                             }
+                            if (endlessMode) {
+                                gameState = GAME_PLAY;
+                            } else {
+                                dojo.SetImage(dojoImgInit);		
+                                window->Clear();
+                                dojo.Resize(WINDOW_WIDTH, WINDOW_HEIGHT);
+                                window->Draw(dojo);
+                                window->Display();
+                            }
+                            
                             resetMenuSelector();
                         } else {
                             // Back to Main Menu
@@ -611,8 +601,6 @@ void Controller::processEvents() {
 
 void Controller::loadResources() {
     if (!targetImg.LoadFromFile("target.png") ||
-        //!lifeImg.LoadFromFile("Life.png") ||
-		//!deathImg.LoadFromFile("Death.png") ||
         !heartImg.LoadFromFile("heart.png") ||
         !goalImg.LoadFromFile("goal.png") ||
         !goalAltImg.LoadFromFile("goal-alt.png") ||
@@ -630,14 +618,16 @@ void Controller::loadResources() {
 		!dojoImg8.LoadFromFile("Dojo/Dojo_8.png") || 
         !starImg.LoadFromFile("star1-25.png") ||
         !coinImg.LoadFromFile("coin.png") ||
-        !menuNewGameImg.LoadFromFile("menu-new-game.png") ||
+        !menuStoryModeImg.LoadFromFile("menu-story-mode.png") ||
         !menuInstructionsImg.LoadFromFile("menu-instructions.png") ||
         !menuBeginnerImg.LoadFromFile("menu-beginner.png") ||
         !menuIntermediateImg.LoadFromFile("menu-intermediate.png") ||
-        !menuAdvancedImg.LoadFromFile("menu-advanced.png")) {
+        !menuAdvancedImg.LoadFromFile("menu-advanced.png") ||
+        !menuEndlessImg.LoadFromFile("menu-endless.png")) {
         
         // This should quit or throw an exception
         printf("Error loading resources - controller\n");
+        window->Close();
     }
 }
 
@@ -645,22 +635,22 @@ void Controller::initializeObjects() {
 	srand(time(NULL));
 
     coin.SetImage(coinImg);
-	//life.SetImage(lifeImg);
-	//death.SetImage(deathImg);
     heart.SetImage(heartImg);
 	gameOver.SetImage(gameOverImg);
 	dojo.SetImage(dojoImgInit);
     background.SetImage(backgroundImg);
     star.SetImage(starImg);
-    menuNewGame.SetImage(menuNewGameImg);
+    menuStoryMode.SetImage(menuStoryModeImg);
     menuInstructions.SetImage(menuInstructionsImg);
     menuBeginner.SetImage(menuBeginnerImg);
     menuIntermediate.SetImage(menuIntermediateImg);
     menuAdvanced.SetImage(menuAdvancedImg);
+    menuEndless.SetImage(menuEndlessImg);
     menuSelector.SetImage(starImg);
     
-    menuNewGame.SetPosition(50, 30);
-    menuInstructions.SetPosition(50, 90);
+    menuStoryMode.SetPosition(50, 30);
+    menuEndless.SetPosition(50, 90);
+    menuInstructions.SetPosition(50, 150);
     
     menuBeginner.SetPosition(50, 30);
     menuIntermediate.SetPosition(50, 90);
@@ -668,7 +658,7 @@ void Controller::initializeObjects() {
     
     menuSelector.SetPosition(10, 45);
     
-    coin.SetPosition(WINDOW_WIDTH/2, WINDOW_HEIGHT - 40);
+    coin.SetPosition(WINDOW_WIDTH/2 + 20, WINDOW_HEIGHT - 45);
 	coin.Scale(.15,.15);
 
     // Add Kick animations

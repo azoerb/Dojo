@@ -53,11 +53,12 @@ private:
     sf::Image backgroundImg;
     sf::Image starImg;
     sf::Image loadingImg;
-    sf::Image menuNewGameImg;
+    sf::Image menuStoryModeImg;
     sf::Image menuInstructionsImg;
     sf::Image menuBeginnerImg;
     sf::Image menuIntermediateImg;
     sf::Image menuAdvancedImg;
+    sf::Image menuEndlessImg;
     sf::Image coinImg;
     
     sf::Sprite dojo;
@@ -68,12 +69,13 @@ private:
     sf::Sprite background;
     sf::Sprite star;
     sf::Sprite loading;
-    sf::Sprite menuNewGame;
+    sf::Sprite menuStoryMode;
     sf::Sprite menuInstructions;
     sf::Sprite menuSelector;
     sf::Sprite menuBeginner;
     sf::Sprite menuIntermediate;
     sf::Sprite menuAdvanced;
+    sf::Sprite menuEndless;
     
     sf::Animation idleAnimation;
     sf::Animation climbAnimation;
@@ -114,6 +116,8 @@ private:
     int menuState;
     int menuSelectorPosition;
     bool shouldDraw;
+    
+    bool endlessMode;
 
     bool keyPresses[NUM_COLUMNS];
 
