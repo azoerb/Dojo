@@ -15,7 +15,7 @@ Controller::Controller() {
     hitCounter = 0;
     
     goToMenu = false;
-    
+    doCombo = false;
     endlessMode = false;
     
     gameState = GAME_MENU;
@@ -75,13 +75,17 @@ void Controller::update() {
             if(numActionFrames == 0) {
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-					if (criticalAttack || comboAttack) {
+					if (criticalAttack || (comboAttack && doCombo)) {
 						enemy->setHealth(enemy->getHealth() - CRITICAL_ACTION_DAMAGE);
 
                         // Attack+ powerup
                         if (powerupCounter[0] > 0) {
                             enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
                         }
+
+                        comboAttack = false;
+                        criticalAttack = false;
+                        doCombo = false;
 					} else {
 						enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
 
@@ -99,11 +103,11 @@ void Controller::update() {
                  // check if player died
                 if (player->getHealth() <= 0) {
                     lives--;
-					//check to see if you have 3 lives left..
+					// check to se if the player has any more lives
 					if (lives > 0) {
-						//we have two options, restart the level, or just continue - like I am.
+						// we have two options, restart the level, or just continue - like I am.
 						player->setHealth(PLAYER_HEALTH);
-						//now display menu?
+						// now display menu?
 					} else {	
 						lives = 3;
                         level = 1;
@@ -231,6 +235,7 @@ void Controller::update() {
 							targetSets[i].changeAccuracy(MISS_PENALTY);
                             goals[col].goalMiss();
                             hitCounter = 0;
+                            comboAttack = false;
                         }
                     } else {
                         found[col] = true;
@@ -243,6 +248,9 @@ void Controller::update() {
                         targetSets[i].removeTarget(j);
                         hit = true;
                         hitCounter++;
+                        if (hitCounter % COMBO_THRESHOLD_1 == 0) {
+                            comboAttack = true;
+                        }
 
 						if (result >= HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
                             goals[col].goalHit(true);
@@ -277,8 +285,6 @@ void Controller::update() {
 
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
-                criticalAttack = false;
-                comboAttack = false;
 
                 // accuracy boost powerup
                 if (powerupCounter[1] > 0) {
@@ -291,7 +297,7 @@ void Controller::update() {
                     currentAnimationType = ANIMATION_COUNTER;
 
                 } else if (accuracy < HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
-                    // use combo attack
+                    /*/ use combo attack
                     if (hitCounter > COMBO_THRESHOLD_2) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
 
@@ -299,18 +305,21 @@ void Controller::update() {
                             currentAnimation = getRandomComboAttack();
                             comboAttack = true;
                         }
-                    }
+                    }*/
                     currentAnimationType = ANIMATION_BLOCK;
                 } else {
                     currentAnimationType = ANIMATION_HIT;
 
-                    // use combo attack
-                    if (hitCounter > COMBO_THRESHOLD_1) {
-						criticalFrame = NUM_CRITICAL_FRAMES;
-
+                    if (comboAttack) { // use combo attack
                         if (getRandomComboAttack() != -1) {
+                            criticalFrame = NUM_CRITICAL_FRAMES;
                             currentAnimation = getRandomComboAttack();
-                            comboAttack = true;
+
+                            //printf("combo: %d\n", currentAnimation);
+                            doCombo = true;
+                        } else {
+                            // If you don't have any combos unlocked don't do a combo
+                            doCombo = false;
                         }
                     }
                     // critical attack
@@ -320,7 +329,7 @@ void Controller::update() {
 					}
                 }
 
-                if (comboAttack) {
+                if (doCombo) {
                     numActionFrames = comboActions[currentAnimation]->getNumAnimationFrames();
                 } else {
                     basicActions[currentAnimation]->selectAnimation(currentAnimationType);
@@ -331,7 +340,7 @@ void Controller::update() {
                 bool addNewSet = true;
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-					if (criticalAttack || comboAttack) {
+                    if (criticalAttack || (comboAttack && doCombo)) {
 						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE || (powerupCounter[0] > 0 && enemy->getHealth() <= CRITICAL_ACTION_DAMAGE + BASIC_ACTION_DAMAGE)) {
 							enemy->setHealth(0);
                             addNewSet = false;
@@ -425,11 +434,11 @@ void Controller::draw() {
             std::stringstream count;
             count << hitCounter;
 
-            if (hitCounter >= COMBO_THRESHOLD_2) {
+            if (comboAttack) {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 0, 0), true);
-            } else if (hitCounter >= COMBO_THRESHOLD_1) {
+            } /*else if (hitCounter >= COMBO_THRESHOLD_1) {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 0), true);
-            } else {
+            } */else {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 255), true);
             }
 
@@ -444,7 +453,7 @@ void Controller::draw() {
             }
 
             if(numActionFrames > 0) {
-                if (comboAttack) {
+                if (comboAttack && doCombo) {
                     comboActions[currentAnimation]->draw(window);
                 } else {
                     basicActions[currentAnimation]->draw(window);
@@ -799,8 +808,8 @@ void Controller::initializeObjects() {
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
     
     // Add transition animations
-    climbAnimation.init("Transitions/Climb/Climb", NUM_CLIMB_FRAMES);
-    enterDojoAnimation.init("Transitions/Enter_Dojo/Enter_Dojo", NUM_ENTER_DOJO_FRAMES);
+    //climbAnimation.init("Transitions/Climb/Climb", NUM_CLIMB_FRAMES);
+    //enterDojoAnimation.init("Transitions/Enter_Dojo/Enter_Dojo", NUM_ENTER_DOJO_FRAMES);
 
     // setup SoundManager
     #ifdef USE_SOUND

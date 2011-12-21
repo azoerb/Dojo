@@ -42,7 +42,7 @@ const int POWERUP_TARGET_THRESHOLD = 50;
 const int POWERUP_DURATION = 500;
 
 // Combo meter constants
-const int COMBO_THRESHOLD_1 = 25;
+const int COMBO_THRESHOLD_1 = 50;
 const int COMBO_THRESHOLD_2 = 100;
 
 // Goal animation constants
