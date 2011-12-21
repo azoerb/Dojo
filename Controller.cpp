@@ -105,6 +105,7 @@ void Controller::update() {
 
 						gameState = GAME_WAIT_FOR_INPUT;
                         goToMenu = true;
+                        loadRandomCombos();
 					}
                 }
 
@@ -162,6 +163,7 @@ void Controller::update() {
 							gameState = GAME_WAIT_FOR_INPUT;
                             goToMenu = true;
 							dojoLevel = 0;
+                            loadRandomCombos();
 						} else {
 							//just go to the next level
 							dojoLevel++;
@@ -251,9 +253,10 @@ void Controller::update() {
 
                 } else if (accuracy < HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
                     // use combo attack
-                    if (hitCounter > 100) {
+                    if (hitCounter > COMBO_THRESHOLD_2) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
-                        currentAnimation = rand() % comboActions.size();
+                        currentAnimation = getRandomComboAttack();
+                        printf("combo: %d\n", currentAnimation);
                         comboAttack = true;
                     }
                     currentAnimationType = ANIMATION_BLOCK;
@@ -261,9 +264,10 @@ void Controller::update() {
                     currentAnimationType = ANIMATION_HIT;
 
                     // use combo attack
-                    if (hitCounter > 50) {
+                    if (hitCounter > COMBO_THRESHOLD_1) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
-                        currentAnimation = rand() % comboActions.size();
+                        currentAnimation = getRandomComboAttack();
+                        printf("combo: %d\n", currentAnimation);
                         comboAttack = true;
                     }
                     // critical attack
@@ -281,21 +285,25 @@ void Controller::update() {
                 }
 
                 // update health here when player/enemy are about to die
+                bool addNewSet = true;
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
 					if (criticalAttack || comboAttack) {
 						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE) {
 							enemy->setHealth(0);
+                            addNewSet = false;
 						}
 					} else {
 						if (enemy->getHealth() <= BASIC_ACTION_DAMAGE) {
 							enemy->setHealth(0);
+                            addNewSet = false;
 						}
 					}
                     break;
                 case ANIMATION_COUNTER:
-                    if (player->getHealth() <= BASIC_ACTION_DAMAGE)
+                    if (player->getHealth() <= BASIC_ACTION_DAMAGE) {
                         player->setHealth(0);
+                    }
                     break;
                 }
 
@@ -303,7 +311,9 @@ void Controller::update() {
                 targetSets.erase(targetSets.begin() + i);
                     
                 // reset targets, goals
-                addRandomSet();
+                if (addNewSet) {
+                    addRandomSet();
+                }
             }
 
             // Check if key is pressed and there is no target to hit
@@ -371,8 +381,14 @@ void Controller::draw() {
             std::stringstream count;
             count << hitCounter;
 
-            displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 0, 0), true);
-            
+            if (hitCounter >= COMBO_THRESHOLD_2) {
+                displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 0, 0), true);
+            } else if (hitCounter >= COMBO_THRESHOLD_1) {
+                displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 0), true);
+            } else {
+                displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 255), true);
+            }
+
             if(numActionFrames > 0) {
                 if (comboAttack) {
                     comboActions[currentAnimation]->draw(window);
@@ -706,6 +722,7 @@ void Controller::initializeObjects() {
     headbutt->addAnimation(ANIMATION_COUNTER, "Actions/Headbutt_Counter/Headbutt_Counter", NUM_HEADBUTT_COUNTER_FRAMES);
     basicActions.push_back(headbutt);
 
+    // Add combos
     loadRandomCombos();
 
     // Add Idle animation
@@ -793,6 +810,12 @@ void Controller::resetState(int level) {
         goals.push_back(Goal(&goalImg, &goalAltImg, 528, i));
     }
 
+    // unlock combo every even level
+    //if (level % 2 == 0 && level/2 < comboActions.size()) {
+    if (level < comboActions.size()) {
+        comboActions[level/2]->unlock();
+    }
+
     gameState = GAME_WAIT_FOR_INPUT;
     
     targetSets.clear();
@@ -809,15 +832,23 @@ void Controller::resetMenuSelector() {
 
 void Controller::loadRandomCombos(int num) {
 
+    // delete any existing combos
+    for (int i = 0; i < comboActions.size(); i++) {
+        if (comboActions.at(i)) { delete comboActions[i]; }
+    }
+
+    // create new combos
     for (int i = 0; i < num; i++) {
         comboActions.push_back(new ComboAction());
     }
 
+    // make sure we don't load the same combo twice
     bool added[NUM_COMBO_ATTACKS];
     for (int i = 0; i < NUM_COMBO_ATTACKS; i++) {
         added[i] = false;
     }
 
+    // randomly add the combos
     for (int i = 0; i < comboActions.size(); i++) {
         delete comboActions[i];
 
@@ -870,4 +901,23 @@ void Controller::loadRandomCombos(int num) {
             break;
         }
     }
+
+    // unlock first combo
+    comboActions[0]->unlock();
+}
+
+int Controller::getRandomComboAttack() {
+    int num = 0;
+
+    for (int i = 0; i < comboActions.size(); i++) {
+        if (comboActions[i]->checkUnlocked()) {
+            num++;
+        }
+    }
+
+    if (num == 0) {
+        return 0;
+    }
+
+    return rand() % num;
 }

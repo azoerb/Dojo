@@ -19,3 +19,11 @@ void ComboAction::update() {
 int ComboAction::getNumAnimationFrames() {
     return animation.getNumFrames();
 }
+
+bool ComboAction::checkUnlocked() {
+    return unlocked;
+}
+
+void ComboAction::unlock() {
+    unlocked = true;
+}

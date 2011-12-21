@@ -130,7 +130,8 @@ private:
     void displayText(std::string message, int x, int y, sf::RenderTarget* target, int size = 50, sf::Color color = sf::Color(0,0,0), bool bold = false);
     void resetState(int level);
     void resetMenuSelector();
-    void loadRandomCombos(int num = 4);
+    void loadRandomCombos(int num = 5);
+    int getRandomComboAttack();
     
 public:
     Controller();

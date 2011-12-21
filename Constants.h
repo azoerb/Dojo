@@ -33,6 +33,10 @@ const float DIFFICULTY_HARD = 1.4;
 const int SPECIAL_PERCENTAGE = 10;
 const int NUM_COMBO_ATTACKS = 12;
 
+// Combo meter constants
+const int COMBO_THRESHOLD_1 = 50;
+const int COMBO_THRESHOLD_2 = 100;
+
 // Goal animation constants
 const int HIT_FRAMES = 10;
 const int OK_FRAMES = 10;

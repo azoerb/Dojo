@@ -15,4 +15,6 @@ public:
     void draw(sf::RenderTarget* target);
     void update();
     int getNumAnimationFrames();
+    bool checkUnlocked();
+    void unlock();
 };
