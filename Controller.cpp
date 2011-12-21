@@ -363,17 +363,17 @@ void Controller::draw() {
         case GAME_PLAY:
             window->Clear();
             window->Draw(background);
-            if (!endlessMode) {
-                window->Draw(coin);
+            /*if (!endlessMode) {
+                //window->Draw(coin);
             
                 std::stringstream type; 
                 type << points; 
                 
                 displayText(type.str(), WINDOW_WIDTH/2 + 60, WINDOW_HEIGHT - 40, window, 20, sf::Color(255,255,255));
-            }
+            }*/
             //draw lives accordingly
             for(int i = 0; i < lives; i++) {
-                heart.SetPosition(endlessMode * 40 + WINDOW_WIDTH/2 - 105 + 35*i, WINDOW_HEIGHT - 40);
+                heart.SetPosition(WINDOW_WIDTH/2 - 50 + 35*i, WINDOW_HEIGHT - 40);
                 window->Draw(heart);
             }
 
@@ -657,7 +657,7 @@ void Controller::loadResources() {
 		!dojoImg7.LoadFromFile("Dojo/Dojo_7.png") || 
 		!dojoImg8.LoadFromFile("Dojo/Dojo_8.png") || 
         !starImg.LoadFromFile("star1-25.png") ||
-        !coinImg.LoadFromFile("coin.png") ||
+        //!coinImg.LoadFromFile("coin.png") ||
         !menuStoryModeImg.LoadFromFile("menu-story-mode.png") ||
         !menuInstructionsImg.LoadFromFile("menu-instructions.png") ||
         !menuBeginnerImg.LoadFromFile("menu-beginner.png") ||
@@ -674,7 +674,7 @@ void Controller::loadResources() {
 void Controller::initializeObjects() {
 	srand(time(NULL));
 
-    coin.SetImage(coinImg);
+    //coin.SetImage(coinImg);
     heart.SetImage(heartImg);
 	gameOver.SetImage(gameOverImg);
 	dojo.SetImage(dojoImgInit);
@@ -698,8 +698,8 @@ void Controller::initializeObjects() {
     
     menuSelector.SetPosition(10, 45);
     
-    coin.SetPosition(WINDOW_WIDTH/2 + 20, WINDOW_HEIGHT - 45);
-	coin.Scale(.15,.15);
+    //coin.SetPosition(WINDOW_WIDTH/2 + 20, WINDOW_HEIGHT - 45);
+	//coin.Scale(.15,.15);
 
     // Add Kick animations
     Action* kick = new Action();
@@ -811,8 +811,7 @@ void Controller::resetState(int level) {
     }
 
     // unlock combo every even level
-    //if (level % 2 == 0 && level/2 < comboActions.size()) {
-    if (level < comboActions.size()) {
+    if (level % 2 == 0 && level/2 < comboActions.size()) {
         comboActions[level/2]->unlock();
     }
 
