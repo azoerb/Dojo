@@ -14,9 +14,13 @@ TechShop::TechShop() {
 	 * Font is available for use under free license
 	 */
 	font.LoadFromFile("AnarchySans.otf");
+
+	//currTechs = new std::vector<Technique>();
+	techs = new std::vector<Technique>();
+	currType = 1;
 }
 
-TechShop::TechShop(std::vector<Technique> listOfTechs) {
+TechShop::TechShop(std::vector<Technique>* listOfTechs) {
 	techs = listOfTechs;
 	cash = 100;
 	tab.LoadFromFile("Shop/tab.png");
@@ -30,11 +34,14 @@ TechShop::TechShop(std::vector<Technique> listOfTechs) {
 	 * Font is available for use under free license
 	 */
 	font.LoadFromFile("AnarchySans.otf");
+
+	techs = new std::vector<Technique>();
+	currType = 1;
 }
 
 TechShop::~TechShop() {
-	delete &currTechs;
-	delete &techs;
+	delete currTechs;
+	delete techs;
 }
 
 // add the amount of cash desired 
@@ -45,7 +52,7 @@ void TechShop::addCash(int amount) {
 // unlock a tech and subtract its cost from total amount
 // throw an error if you have insufficient funds
 void TechShop::unlockTech(int id) {
-	for(std::vector<Technique>::iterator it = techs.begin(); it != techs.end(); ++it) {
+	for(std::vector<Technique>::iterator it = techs->begin(); it != techs->end(); ++it) {
 		Technique temp = *it;
 		if (temp.getId() == id) {
 			if (cash - temp.getCost() >= 0) {
@@ -55,34 +62,18 @@ void TechShop::unlockTech(int id) {
 	}
 }
 
-void TechShop::addTech(Technique tech) {
-
-	if (techs.size() == 0) {
-		techs.reserve(21);
-		techs[0] = tech;
-	}
-
-	for(int i = 0; i < techs.size(); i++) {
-		// check the cost
-		if (tech.getCost() < techs[i].getCost()) {
-			// if the cost is less, put it in the current element's
-			// spot and then push the elements back
-			for (int j = techs.size() - 1; j > i; j--) {
-				techs[j] = techs[j-1];
-			}
-			techs[i] = tech;
-		}
-	}
+void TechShop::addTech(Technique* tech) {
+	techs->push_back(*tech);
 }
 
 // returns techs based on the level given
-std::vector<Technique> TechShop::getPage(int level) {
-	std::vector<Technique> oneList;
+std::vector<Technique>* TechShop::getPage(int level) {
+	std::vector<Technique>* oneList;
 
-	for(std::vector<Technique>::iterator it = techs.begin(); it != techs.end(); ++it) {
+	for(std::vector<Technique>::iterator it = techs->begin(); it != techs->end(); ++it) {
 		Technique temp = *it;
 		if (temp.getLevel() == level) {
-			oneList.push_back(temp);
+			oneList->push_back(temp);
 		}
 	}
 
@@ -105,11 +96,11 @@ void TechShop::drawShop(sf::RenderWindow* window) {
 		window->Draw(sp_bg);
 
 		// overlay the techniques onto the background
-		std::vector<Technique> tmp = TechShop::getPage(1);
+		std::vector<Technique>* tmp = TechShop::getPage(1);
 
 		// write techniques
-		for (int i = 0; i < tmp.size(); i++) {
-			Technique temp = tmp.at(i);
+		for (int i = 0; i < tmp->size(); i++) {
+			Technique temp = tmp->at(i);
 
 			sf::String techn;
 			techn.SetText(temp.getName());
@@ -133,10 +124,10 @@ void TechShop::drawShop(sf::RenderWindow* window) {
 		window->Draw(sp_bg);
 
 		// overlay the techniques onto the background
-		std::vector<Technique> tmp = TechShop::getPage(2);
+		std::vector<Technique>* tmp = TechShop::getPage(2);
 		// write techniques
-		for (int i = 0; i < tmp.size(); i++) {
-			Technique temp = tmp.at(i);
+		for (int i = 0; i < tmp->size(); i++) {
+			Technique temp = tmp->at(i);
 
 			sf::String techn;
 			techn.SetText(temp.getName());
@@ -160,10 +151,10 @@ void TechShop::drawShop(sf::RenderWindow* window) {
 		window->Draw(sp_bg);
 
 		// overlay the techniques onto the background
-		std::vector<Technique> tmp = TechShop::getPage(2);
+		std::vector<Technique>* tmp = TechShop::getPage(2);
 		// write techniques
-		for (int i = 0; i < tmp.size(); i++) {
-			Technique temp = tmp.at(i);
+		for (int i = 0; i < tmp->size(); i++) {
+			Technique temp = tmp->at(i);
 
 			sf::String techn;
 			techn.SetText(temp.getName());

@@ -1,5 +1,4 @@
-#ifndef GUARD_tech_h
-#define GUARD_tech_h
+#pragma once
 
 #define BEGINNER 1
 #define INTERMEDIATE 2
@@ -49,5 +48,3 @@ public:
 	char * getName();
 
 };
-
-#endif

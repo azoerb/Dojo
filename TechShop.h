@@ -1,21 +1,20 @@
-#ifndef SHOP_tech_h
-#define SHOP_tech_h
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include "Technique.h"
-#include "Controller.h"
+//#include "Controller.h"
 #include <list>
-using namespace std;
+//using namespace std;
 
 class TechShop {
 private:
 
 	// the list of techniques in the game
-	std::vector<Technique> techs;
+	std::vector<Technique>* techs;
 
 	// for the draw method, this may be a little inefficient
 	// but i'm tired right now
-	std::vector<Technique> currTechs;
+	std::vector<Technique>* currTechs;
 
 	// the current type being shown
 	int currType;
@@ -37,7 +36,7 @@ public:
 
 	TechShop();
 
-	TechShop(std::vector<Technique> listOfTechs);
+	TechShop(std::vector<Technique>* listOfTechs);
 
 	~TechShop();
 
@@ -53,10 +52,10 @@ public:
 	void unlockTech(int id);
 
 	// adds a tech
-	void addTech(Technique tech);
+	void addTech(Technique* tech);
 
 	// returns techs based on the level given
-	std::vector<Technique> getPage(int level);
+	std::vector<Technique>* getPage(int level);
 
 	// draws the shop on the screen
 	void drawShop(sf::RenderWindow* window);
@@ -64,5 +63,3 @@ public:
 	// displays current level
 	void switchScreen(int level);
 };
-
-#endif
