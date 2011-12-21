@@ -24,7 +24,7 @@ const int CRITICAL_BOUND = 90;
 
 // Menu constants
 const int NUM_MENU_ITEMS = 3;
-const int NUM_DIFFICULTY_LEVELS = 3;
+const int NUM_DIFFICULTY_LEVELS = 4;
 
 const float DIFFICULTY_MEDIUM = 1.2;
 const float DIFFICULTY_HARD = 1.4;

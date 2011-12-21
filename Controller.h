@@ -58,6 +58,7 @@ private:
     sf::Image menuBeginnerImg;
     sf::Image menuIntermediateImg;
     sf::Image menuAdvancedImg;
+    sf::Image menuAdvanced2Img;
     sf::Image menuEndlessImg;
     sf::Image coinImg;
     
@@ -75,6 +76,7 @@ private:
     sf::Sprite menuBeginner;
     sf::Sprite menuIntermediate;
     sf::Sprite menuAdvanced;
+    sf::Sprite menuAdvanced2;
     sf::Sprite menuEndless;
     
     sf::Animation idleAnimation;

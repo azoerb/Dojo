@@ -12,7 +12,6 @@ Controller::Controller() {
 	criticalAttack = false;
     comboAttack = false;
 	criticalFrame = 0;
-    currentNumColumns = 4;
     hitCounter = 0;
     
     goToMenu = false;
@@ -346,6 +345,7 @@ void Controller::draw() {
                     window->Draw(menuBeginner);
                     window->Draw(menuIntermediate);
                     window->Draw(menuAdvanced);
+                    window->Draw(menuAdvanced2);
                     window->Draw(menuSelector);
                     window->Display();
                     break;
@@ -578,16 +578,25 @@ void Controller::processEvents() {
                                 case 0:
                                     // Easy
                                     difficultyLevel = 1.0;
+                                    currentNumColumns = 4;
                                     resetState(1);
                                     break;
                                 case 1:
                                     // Medium
                                     difficultyLevel = DIFFICULTY_MEDIUM;
+                                    currentNumColumns = 4;
                                     resetState(1);
                                     break;
                                 case 2:
                                     // Hard
                                     difficultyLevel = DIFFICULTY_HARD;
+                                    currentNumColumns = 4;
+                                    resetState(1);
+                                    break;
+                                case 3:
+                                    // Hard with 8 columns
+                                    difficultyLevel = DIFFICULTY_HARD;
+                                    currentNumColumns = 8;
                                     resetState(1);
                                     break;
                             }
@@ -663,6 +672,7 @@ void Controller::loadResources() {
         !menuBeginnerImg.LoadFromFile("menu-beginner.png") ||
         !menuIntermediateImg.LoadFromFile("menu-intermediate.png") ||
         !menuAdvancedImg.LoadFromFile("menu-advanced.png") ||
+        !menuAdvanced2Img.LoadFromFile("menu-advanced2.png") ||
         !menuEndlessImg.LoadFromFile("menu-endless.png")) {
         
         // This should quit or throw an exception
@@ -685,6 +695,7 @@ void Controller::initializeObjects() {
     menuBeginner.SetImage(menuBeginnerImg);
     menuIntermediate.SetImage(menuIntermediateImg);
     menuAdvanced.SetImage(menuAdvancedImg);
+    menuAdvanced2.SetImage(menuAdvanced2Img);
     menuEndless.SetImage(menuEndlessImg);
     menuSelector.SetImage(starImg);
     
@@ -695,6 +706,7 @@ void Controller::initializeObjects() {
     menuBeginner.SetPosition(50, 30);
     menuIntermediate.SetPosition(50, 90);
     menuAdvanced.SetPosition(50, 150);
+    menuAdvanced2.SetPosition(50, 210);
     
     menuSelector.SetPosition(10, 45);
     
