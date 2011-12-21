@@ -104,7 +104,6 @@ void Controller::update() {
 
 						gameState = GAME_WAIT_FOR_INPUT;
                         goToMenu = true;
-                        loadRandomCombos();
 					}
                 }
 
@@ -155,6 +154,12 @@ void Controller::update() {
 						window->Clear();
 						dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
 						window->Draw(dojo);
+
+                        if ((level-2)/2 < comboActions.size() && (level-2)/2 >= 0) {
+                            comboActions[(level-2)/2]->unlock();
+                            displayText("You have unlocked the " + comboDescriptions[(level-2)/2] + " combo!", 0, 0, window, 24, sf::Color(255, 255, 255), true);
+                        }
+
 						window->Display();
                         
 						if(dojoLevel == 8) {
@@ -162,7 +167,6 @@ void Controller::update() {
 							gameState = GAME_WAIT_FOR_INPUT;
                             goToMenu = true;
 							dojoLevel = 0;
-                            loadRandomCombos();
 						} else {
 							//just go to the next level
 							dojoLevel++;
@@ -254,9 +258,12 @@ void Controller::update() {
                     // use combo attack
                     if (hitCounter > COMBO_THRESHOLD_2) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
-                        currentAnimation = getRandomComboAttack();
-                        printf("combo: %d\n", currentAnimation);
-                        comboAttack = true;
+
+                        if (getRandomComboAttack() != -1) {
+                            currentAnimation = getRandomComboAttack();
+                            printf("combo: %d\n", currentAnimation);
+                            comboAttack = true;
+                        }
                     }
                     currentAnimationType = ANIMATION_BLOCK;
                 } else {
@@ -265,9 +272,12 @@ void Controller::update() {
                     // use combo attack
                     if (hitCounter > COMBO_THRESHOLD_1) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
-                        currentAnimation = getRandomComboAttack();
-                        printf("combo: %d\n", currentAnimation);
-                        comboAttack = true;
+
+                        if (getRandomComboAttack() != -1) {
+                            currentAnimation = getRandomComboAttack();
+                            printf("combo: %d\n", currentAnimation);
+                            comboAttack = true;
+                        }
                     }
                     // critical attack
 					else if (accuracy > CRITICAL_BOUND + ((difficultyLevel - 1) * (100 - CRITICAL_BOUND))) {
@@ -527,6 +537,11 @@ void Controller::processEvents() {
                     }
                     break;
 
+                case sf::Key::K:
+                    if (gameState == GAME_PLAY)
+                        player->setHealth(0);
+                    break;
+
                 case sf::Key::Escape:
                     if(gameState == GAME_PAUSE) {
                         gameState = GAME_PLAY;
@@ -573,7 +588,8 @@ void Controller::processEvents() {
                         } else if (menuState == STATE_NEW_GAME) {
                             // Start the game
                             menuState = STATE_MAIN_MENU;
-                            
+                            loadCombos(menuSelectorPosition, endlessMode);
+
                             switch (menuSelectorPosition) {
                                 case 0:
                                     // Easy
@@ -734,9 +750,6 @@ void Controller::initializeObjects() {
     headbutt->addAnimation(ANIMATION_COUNTER, "Actions/Headbutt_Counter/Headbutt_Counter", NUM_HEADBUTT_COUNTER_FRAMES);
     basicActions.push_back(headbutt);
 
-    // Add combos
-    loadRandomCombos();
-
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
     
@@ -822,11 +835,6 @@ void Controller::resetState(int level) {
         goals.push_back(Goal(&goalImg, &goalAltImg, 528, i));
     }
 
-    // unlock combo every even level
-    if (level % 2 == 0 && level/2 < comboActions.size()) {
-        comboActions[level/2]->unlock();
-    }
-
     gameState = GAME_WAIT_FOR_INPUT;
     
     targetSets.clear();
@@ -841,16 +849,18 @@ void Controller::resetMenuSelector() {
     menuSelector.SetPosition(10, 45);
 }
 
+/*
 void Controller::loadRandomCombos(int num) {
-
     // delete any existing combos
     for (int i = 0; i < comboActions.size(); i++) {
         if (comboActions.at(i)) { delete comboActions[i]; }
     }
+    comboDescriptions.clear();
 
     // create new combos
     for (int i = 0; i < num; i++) {
         comboActions.push_back(new ComboAction());
+        comboDescriptions.push_back("");
     }
 
     // make sure we don't load the same combo twice
@@ -860,10 +870,7 @@ void Controller::loadRandomCombos(int num) {
     }
 
     // randomly add the combos
-    for (int i = 0; i < comboActions.size(); i++) {
-        delete comboActions[i];
-
-        comboActions[i] = new ComboAction();
+    for (int i = 0; i < num; i++) {
 
         int num = rand()%NUM_COMBO_ATTACKS;
 
@@ -871,50 +878,118 @@ void Controller::loadRandomCombos(int num) {
             num = (num+1)%NUM_COMBO_ATTACKS;
         }
 
+        printf("\tnum: %d\n", num);
         added[num] = true;
 
         switch(num) {
         case 0:
             comboActions[i]->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
+            comboDescriptions[i] = "Punch-Punch";
             break;
         case 1:
             comboActions[i]->addAnimation("ComboActions/Punch_Kick_Combo/Punch_Kick_Combo", NUM_PUNCH_KICK_FRAMES);
+            comboDescriptions[i] = "Punch-Kick";
             break;
         case 2:
             comboActions[i]->addAnimation("ComboActions/Punch_Headbutt_Combo/Punch_Headbutt_Combo", NUM_PUNCH_HEADBUTT_FRAMES);
+            comboDescriptions[i] = "Punch-Headbutt";
             break;
         case 3:
             comboActions[i]->addAnimation("ComboActions/Kick_Punch_Combo/Kick_Punch_Combo", NUM_KICK_PUNCH_FRAMES);
+            comboDescriptions[i] = "Kick-Punch";
             break;
         case 4:
             comboActions[i]->addAnimation("ComboActions/Kick_Kick_Combo/Kick_Kick_Combo", NUM_KICK_KICK_FRAMES);
+            comboDescriptions[i] = "Kick-Kick";
             break;
         case 5:
             comboActions[i]->addAnimation("ComboActions/Kick_Headbutt_Combo/Kick_Headbutt_Combo", NUM_KICK_HEADBUTT_FRAMES);
+            comboDescriptions[i] = "Kick-Headbutt";
             break;
         case 6:
             comboActions[i]->addAnimation("ComboActions/Headbutt_Punch_Combo/Headbutt_Punch_Combo", NUM_HEADBUTT_PUNCH_FRAMES);
+            comboDescriptions[i] = "Headbutt-Punch";
             break;
         case 7:
             comboActions[i]->addAnimation("ComboActions/Headbutt_Kick_Combo/Headbutt_Kick_Combo", NUM_HEADBUTT_KICK_FRAMES);
+            comboDescriptions[i] = "Headbutt-Kick";
             break;
         case 8:
             comboActions[i]->addAnimation("ComboActions/Slide_Tackle/Slide_Tackle", NUM_SLIDE_TACKLE_FRAMES);
+            comboDescriptions[i] = "Slide Tackle";
             break;
         case 9:
             comboActions[i]->addAnimation("ComboActions/Cartwheel/Cartwheel", NUM_CARTWHEEL_FRAMES);
+            comboDescriptions[i] = "Cartwheel";
             break;
         case 10:
             comboActions[i]->addAnimation("ComboActions/Punch_Behind_Punch/Punch_Behind_Punch", NUM_PUNCH_BEHIND_PUNCH_FRAMES);
+            comboDescriptions[i] = "Punch-Behind-Punch";
             break;
         case 11:
             comboActions[i]->addAnimation("ComboActions/Jump_Kick/Jump_Kick", NUM_JUMP_KICK_FRAMES);
+            comboDescriptions[i] = "Jump Kick";
             break;
         }
     }
 
     // unlock first combo
     comboActions[0]->unlock();
+}
+*/
+
+void Controller::loadCombos(int difficulty, bool unlocked) {
+     // delete any existing combos
+    for (int i = 0; i < comboActions.size(); i++) {
+        if (comboActions.at(i)) { delete comboActions[i]; }
+    }
+    comboActions.clear();
+    comboDescriptions.clear();
+
+    // create new combos
+    for (int i = 0; i < NUM_COMBOS_PER_DIFFICULTY; i++) {
+        comboActions.push_back(new ComboAction());
+        comboDescriptions.push_back("");
+
+        if (unlocked) {
+            comboActions[i]->unlock();
+        }
+    }
+
+    // load combos based on difficulty
+    switch(difficulty) {
+    case 0: // easy
+        comboActions[0]->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
+        comboDescriptions[0] = "Punch-Punch";
+        comboActions[1]->addAnimation("ComboActions/Kick_Punch_Combo/Kick_Punch_Combo", NUM_KICK_PUNCH_FRAMES);
+        comboDescriptions[1] = "Kick-Punch";
+        comboActions[2]->addAnimation("ComboActions/Headbutt_Kick_Combo/Headbutt_Kick_Combo", NUM_HEADBUTT_KICK_FRAMES);
+        comboDescriptions[2] = "Headbutt-Kick";
+        comboActions[3]->addAnimation("ComboActions/Slide_Tackle/Slide_Tackle", NUM_SLIDE_TACKLE_FRAMES);
+        comboDescriptions[3] = "Slide Tackle";
+        break;
+    case 1: // intermediate
+        comboActions[0]->addAnimation("ComboActions/Punch_Kick_Combo/Punch_Kick_Combo", NUM_PUNCH_KICK_FRAMES);
+        comboDescriptions[0] = "Punch-Kick";
+        comboActions[1]->addAnimation("ComboActions/Kick_Headbutt_Combo/Kick_Headbutt_Combo", NUM_KICK_HEADBUTT_FRAMES);
+        comboDescriptions[1] = "Kick-Headbutt";
+        comboActions[2]->addAnimation("ComboActions/Headbutt_Punch_Combo/Headbutt_Punch_Combo", NUM_HEADBUTT_PUNCH_FRAMES);
+        comboDescriptions[2] = "Headbutt-Punch";
+        comboActions[3]->addAnimation("ComboActions/Cartwheel/Cartwheel", NUM_CARTWHEEL_FRAMES);
+        comboDescriptions[3] = "Cartwheel";
+        break;
+    case 2: // advanced
+    case 3: // advanced +
+        comboActions[0]->addAnimation("ComboActions/Punch_Headbutt_Combo/Punch_Headbutt_Combo", NUM_PUNCH_HEADBUTT_FRAMES); // PROBLEM HERE
+        comboDescriptions[0] = "Punch-Headbutt";
+        comboActions[1]->addAnimation("ComboActions/Kick_Kick_Combo/Kick_Kick_Combo", NUM_KICK_KICK_FRAMES);
+        comboDescriptions[1] = "Kick-Kick";
+        comboActions[2]->addAnimation("ComboActions/Punch_Behind_Punch/Punch_Behind_Punch", NUM_PUNCH_BEHIND_PUNCH_FRAMES);
+        comboDescriptions[2] = "Punch-Behind-Punch";
+        comboActions[3]->addAnimation("ComboActions/Jump_Kick/Jump_Kick", NUM_JUMP_KICK_FRAMES);
+        comboDescriptions[3] = "Jump Kick";
+        break;
+    }
 }
 
 int Controller::getRandomComboAttack() {
@@ -927,7 +1002,7 @@ int Controller::getRandomComboAttack() {
     }
 
     if (num == 0) {
-        return 0;
+        return -1;
     }
 
     return rand() % num;

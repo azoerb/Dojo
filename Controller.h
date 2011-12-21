@@ -88,6 +88,8 @@ private:
     std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
 
+    std::vector<std::string> comboDescriptions;
+
     sf::String text;
     
     int level;
@@ -133,6 +135,7 @@ private:
     void resetState(int level);
     void resetMenuSelector();
     void loadRandomCombos(int num = 5);
+    void loadCombos(int difficulty, bool unlocked = false);
     int getRandomComboAttack();
     
 public:

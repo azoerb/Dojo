@@ -26,12 +26,14 @@ const int CRITICAL_BOUND = 90;
 const int NUM_MENU_ITEMS = 3;
 const int NUM_DIFFICULTY_LEVELS = 4;
 
+const float DIFFICULTY_EASY = 1.0;
 const float DIFFICULTY_MEDIUM = 1.2;
 const float DIFFICULTY_HARD = 1.4;
 
 // Special move constants
 const int SPECIAL_PERCENTAGE = 10;
 const int NUM_COMBO_ATTACKS = 12;
+const int NUM_COMBOS_PER_DIFFICULTY = 4;
 
 // Combo meter constants
 const int COMBO_THRESHOLD_1 = 25;
