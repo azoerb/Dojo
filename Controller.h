@@ -48,6 +48,7 @@ private:
     sf::Image heartImg;
     
     sf::Image targetImg;
+    sf::Image targetAltImg;
     sf::Image goalImg;
     sf::Image goalAltImg;
     sf::Image backgroundImg;
@@ -124,6 +125,10 @@ private:
     bool endlessMode;
 
     bool keyPresses[NUM_COLUMNS];
+
+    int powerupCounter[NUM_POWERUPS];
+    bool powerupSet;
+    int powerupTargetCount;
 
     int currentNumColumns;
     

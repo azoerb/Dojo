@@ -77,8 +77,18 @@ void Controller::update() {
                 case ANIMATION_HIT:
 					if (criticalAttack || comboAttack) {
 						enemy->setHealth(enemy->getHealth() - CRITICAL_ACTION_DAMAGE);
+
+                        // Attack+ powerup
+                        if (powerupCounter[0] > 0) {
+                            enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                        }
 					} else {
 						enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+
+                        // Attack+ powerup
+                        if (powerupCounter[0] > 0) {
+                            enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                        }
 					}
                     break;
                 case ANIMATION_COUNTER:
@@ -189,6 +199,13 @@ void Controller::update() {
             elapsedTime = .1;
         }
 
+        // update powerup counters
+        for (int i = 0; i < NUM_POWERUPS; i++) {
+            if (powerupCounter[i] > 0) {
+                powerupCounter[i]--;
+            }
+        }
+
         // set to true when we encounter the first target in the respective column
         // to avoid checking far away targets
         // this fixes the problem of "missing" all targets in the column
@@ -217,6 +234,11 @@ void Controller::update() {
                         }
                     } else {
                         found[col] = true;
+
+                        if (powerupSet && targets->at(j).isSpecial()) {
+                            powerupTargetCount --;
+                        }
+
                         targetSets[i].changeAccuracy(result);
                         targetSets[i].removeTarget(j);
                         hit = true;
@@ -244,10 +266,24 @@ void Controller::update() {
 
             // Once all of the targetSet's targets are gone
             if (targets->size() == 0) {
+
+                // check for powerup
+                if (powerupSet && powerupTargetCount == 0) {
+                    powerupTargetCount--;
+
+                    int powerup = rand() % NUM_POWERUPS;
+                    powerupCounter[powerup] = POWERUP_DURATION;
+                }
+
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
                 criticalAttack = false;
                 comboAttack = false;
+
+                // accuracy boost powerup
+                if (powerupCounter[1] > 0) {
+                    accuracy += 25;
+                }
 
                 currentAnimation = rand() % basicActions.size();
                                 
@@ -261,7 +297,6 @@ void Controller::update() {
 
                         if (getRandomComboAttack() != -1) {
                             currentAnimation = getRandomComboAttack();
-                            printf("combo: %d\n", currentAnimation);
                             comboAttack = true;
                         }
                     }
@@ -275,7 +310,6 @@ void Controller::update() {
 
                         if (getRandomComboAttack() != -1) {
                             currentAnimation = getRandomComboAttack();
-                            printf("combo: %d\n", currentAnimation);
                             comboAttack = true;
                         }
                     }
@@ -298,12 +332,12 @@ void Controller::update() {
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
 					if (criticalAttack || comboAttack) {
-						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE) {
+						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE || (powerupCounter[0] > 0 && enemy->getHealth() <= CRITICAL_ACTION_DAMAGE + BASIC_ACTION_DAMAGE)) {
 							enemy->setHealth(0);
                             addNewSet = false;
-						}
+                        }
 					} else {
-						if (enemy->getHealth() <= BASIC_ACTION_DAMAGE) {
+                        if (enemy->getHealth() <= BASIC_ACTION_DAMAGE || (powerupCounter[0] > 0 && enemy->getHealth() <= 2*BASIC_ACTION_DAMAGE)) {
 							enemy->setHealth(0);
                             addNewSet = false;
 						}
@@ -397,6 +431,16 @@ void Controller::draw() {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 0), true);
             } else {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 255), true);
+            }
+
+            // draw current powerups
+            // 2X attack
+            if (powerupCounter[0] > 0) {
+                displayText("ATTACK+", WINDOW_WIDTH/2 - 80, WINDOW_HEIGHT - 110, window, 16, sf::Color(255, 0, 0), true);
+            }
+            // accuracy boost
+            if (powerupCounter[1] > 0) {
+                displayText("ACCURACY+", WINDOW_WIDTH/2, WINDOW_HEIGHT - 110, window, 16, sf::Color(255, 0, 0), true);
             }
 
             if(numActionFrames > 0) {
@@ -666,6 +710,7 @@ void Controller::processEvents() {
 
 void Controller::loadResources() {
     if (!targetImg.LoadFromFile("target.png") ||
+        !targetAltImg.LoadFromFile("target-alt.png") ||
         !heartImg.LoadFromFile("heart.png") ||
         !goalImg.LoadFromFile("goal.png") ||
         !goalAltImg.LoadFromFile("goal-alt.png") ||
@@ -772,11 +817,25 @@ void Controller::addRandomSet() {
     }
     int speed = SPEED_START + ((difficultyLevel - 1) * 200) + (level * SPEED_INCREASE);
 
+    bool havePowerup = false;
+
+    if (rand() % 100 < POWERUP_THRESHOLD) {
+        int powerup = rand() % NUM_POWERUPS;
+        havePowerup = true;
+        powerupTargetCount = 0;
+    }
+
 	targetSets.push_back(TargetSet());
     int y = 0;
 	for(int i = 0; i < numTargets; i++) {
         int col = rand() % currentNumColumns;
-		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, col, y));
+
+        if (havePowerup && rand() % 100 < POWERUP_TARGET_THRESHOLD) {
+    		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, &targetAltImg, speed, col, y, true));
+            powerupTargetCount++;
+        } else {
+		    targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, &targetAltImg, speed, col, y));
+        }
 
         // add doubles, triples, quadruples
         /*
@@ -795,6 +854,10 @@ void Controller::addRandomSet() {
 
         y += COLUMN_WIDTH;
 	}
+
+    if (powerupTargetCount > 0) {
+        powerupSet = true;
+    }
 }
 
 void Controller::randomizeGoals() {
@@ -836,6 +899,13 @@ void Controller::resetState(int level) {
     }
 
     gameState = GAME_WAIT_FOR_INPUT;
+
+    // reset powerups
+    for (int i = 0; i < NUM_POWERUPS; i++) {
+        powerupCounter[i] = 0;
+    }
+    powerupTargetCount = 0;
+    powerupSet = false;
     
     targetSets.clear();
     for (int i = 0; i < NUM_COLUMNS; i++) {
