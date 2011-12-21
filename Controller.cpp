@@ -169,7 +169,7 @@ void Controller::update() {
 						dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
 						window->Draw(dojo);
 
-                        if ((level-2)/2 < comboActions.size() && (level-2)/2 >= 0) {
+                        if (level % 2 == 0 && (level-2)/2 < comboActions.size() && (level-2)/2 >= 0) {
                             comboActions[(level-2)/2]->unlock();
                             displayText("You have unlocked the " + comboDescriptions[(level-2)/2] + " combo!", 0, 0, window, 24, sf::Color(255, 255, 255), true);
                         }
@@ -646,7 +646,7 @@ void Controller::processEvents() {
                             switch (menuSelectorPosition) {
                                 case 0:
                                     // Easy
-                                    difficultyLevel = 1.0;
+                                    difficultyLevel = DIFFICULTY_EASY;
                                     currentNumColumns = 4;
                                     resetState(1);
                                     break;
