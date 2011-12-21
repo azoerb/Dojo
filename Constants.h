@@ -31,6 +31,7 @@ const float DIFFICULTY_HARD = 1.4;
 
 // Special move constants
 const int SPECIAL_PERCENTAGE = 10;
+const int NUM_COMBO_ATTACKS = 12;
 
 // Goal animation constants
 const int HIT_FRAMES = 10;
@@ -81,4 +82,4 @@ const int NUM_PUNCH_BEHIND_PUNCH_FRAMES = 44;
 const int NUM_JUMP_KICK_FRAMES = 50;
 
 const int NUM_CLIMB_FRAMES = 23;
-const int NUM_ENTER_DOJO_FRAMES = 33;
+const int NUM_ENTER_DOJO_FRAMES = 32;

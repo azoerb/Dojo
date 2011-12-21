@@ -82,7 +82,6 @@ private:
     sf::Animation enterDojoAnimation;
     
     std::vector<Action*> basicActions;
-    std::vector<Action*> specialActions;
     std::vector<ComboAction*> comboActions;
     std::vector<TargetSet> targetSets;
     std::vector<Goal> goals;
@@ -100,6 +99,7 @@ private:
     int currentAnimationType;
 
 	bool criticalAttack;
+    bool comboAttack;
 	int criticalFrame;
     
     bool goToMenu;
@@ -130,6 +130,7 @@ private:
     void displayText(std::string message, int x, int y, sf::RenderTarget* target, int size = 50, sf::Color color = sf::Color(0,0,0), bool bold = false);
     void resetState(int level);
     void resetMenuSelector();
+    void loadRandomCombos(int num = 4);
     
 public:
     Controller();

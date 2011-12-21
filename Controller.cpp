@@ -10,6 +10,7 @@ Controller::Controller() {
     enemy = new Enemy(BASIC_ENEMY_HEALTH);
 
 	criticalAttack = false;
+    comboAttack = false;
 	criticalFrame = 0;
     currentNumColumns = 4;
     hitCounter = 0;
@@ -48,10 +49,6 @@ Controller::~Controller() {
         if (basicActions.at(i)) { delete basicActions[i]; }
     }
     
-    for (int i = 0; i < specialActions.size(); i++) {
-        if (specialActions.at(i)) { delete specialActions[i]; }
-    }
-    
     for (int i = 0; i < comboActions.size(); i++) {
         if (comboActions.at(i)) { delete comboActions[i]; }
     }
@@ -79,9 +76,8 @@ void Controller::update() {
             if(numActionFrames == 0) {
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-					if (criticalAttack) {
+					if (criticalAttack || comboAttack) {
 						enemy->setHealth(enemy->getHealth() - CRITICAL_ACTION_DAMAGE);
-						criticalAttack = false;
 					} else {
 						enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
 					}
@@ -101,6 +97,7 @@ void Controller::update() {
 						//now display menu?
 					} else {	
 						lives = 3;
+                        level = 1;
 						window->Clear();
 						gameOver.Resize(WINDOW_WIDTH, WINDOW_HEIGHT);
 						window->Draw(gameOver);
@@ -244,32 +241,51 @@ void Controller::update() {
             if (targets->size() == 0) {
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
+                criticalAttack = false;
+                comboAttack = false;
 
                 currentAnimation = rand() % basicActions.size();
                                 
                 if (accuracy < BLOCK_BOUND + ((difficultyLevel - 1) * (100 - BLOCK_BOUND))) {
                     currentAnimationType = ANIMATION_COUNTER;
+
                 } else if (accuracy < HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
+                    // use combo attack
+                    if (hitCounter > 100) {
+						criticalFrame = NUM_CRITICAL_FRAMES;
+                        currentAnimation = rand() % comboActions.size();
+                        comboAttack = true;
+                    }
                     currentAnimationType = ANIMATION_BLOCK;
                 } else {
                     currentAnimationType = ANIMATION_HIT;
 
-					if (accuracy > CRITICAL_BOUND + ((difficultyLevel - 1) * (100 - CRITICAL_BOUND))) {
+                    // use combo attack
+                    if (hitCounter > 50) {
+						criticalFrame = NUM_CRITICAL_FRAMES;
+                        currentAnimation = rand() % comboActions.size();
+                        comboAttack = true;
+                    }
+                    // critical attack
+					else if (accuracy > CRITICAL_BOUND + ((difficultyLevel - 1) * (100 - CRITICAL_BOUND))) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
                         criticalAttack = true;
 					}
                 }
-                    
-                basicActions[currentAnimation]->selectAnimation(currentAnimationType);
-                numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
+
+                if (comboAttack) {
+                    numActionFrames = comboActions[currentAnimation]->getNumAnimationFrames();
+                } else {
+                    basicActions[currentAnimation]->selectAnimation(currentAnimationType);
+                    numActionFrames = basicActions[currentAnimation]->getNumAnimationFrames();
+                }
 
                 // update health here when player/enemy are about to die
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-					if (criticalAttack) {
+					if (criticalAttack || comboAttack) {
 						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE) {
 							enemy->setHealth(0);
-							criticalAttack = false;
 						}
 					} else {
 						if (enemy->getHealth() <= BASIC_ACTION_DAMAGE) {
@@ -358,7 +374,11 @@ void Controller::draw() {
             displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 0, 0), true);
             
             if(numActionFrames > 0) {
-                basicActions[currentAnimation]->draw(window);
+                if (comboAttack) {
+                    comboActions[currentAnimation]->draw(window);
+                } else {
+                    basicActions[currentAnimation]->draw(window);
+                }
             } else {
                 idleAnimation.draw(window);
             }
@@ -381,7 +401,11 @@ void Controller::draw() {
             enemy->drawHealthBar(&star, window);
             
 			if (criticalFrame > 0) {
-				displayText("CRITICAL", WINDOW_WIDTH /2 - 100, 100, window, 50, sf::Color(255, 0, 0, 255 * criticalFrame / NUM_CRITICAL_FRAMES), true);
+                if (comboAttack) {
+                    displayText("COMBO", WINDOW_WIDTH /2 - 80, 100, window, 50, sf::Color(255, 0, 0, 255 * criticalFrame / NUM_CRITICAL_FRAMES), true);
+                } else {
+				    displayText("CRITICAL", WINDOW_WIDTH /2 - 100, 100, window, 50, sf::Color(255, 0, 0, 255 * criticalFrame / NUM_CRITICAL_FRAMES), true);
+                }
 				criticalFrame--;
 			}
 
@@ -682,56 +706,8 @@ void Controller::initializeObjects() {
     headbutt->addAnimation(ANIMATION_COUNTER, "Actions/Headbutt_Counter/Headbutt_Counter", NUM_HEADBUTT_COUNTER_FRAMES);
     basicActions.push_back(headbutt);
 
-    /*/ Maybe load combos when they are purchased instead of now to speed up loading?
-    ComboAction* punchPunch = new ComboAction();
-    punchPunch->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
-    comboActions.push_back(punchPunch);
-    
-    ComboAction* punchKick = new ComboAction();
-    punchKick->addAnimation("ComboActions/Punch_Kick_Combo/Punch_Kick_Combo", NUM_PUNCH_KICK_FRAMES);
-    comboActions.push_back(punchKick);
-    
-    ComboAction* punchHeadbutt = new ComboAction();
-    punchHeadbutt->addAnimation("ComboActions/Punch_Headbutt_Combo/Punch_Headbutt_Combo", NUM_PUNCH_HEADBUTT_FRAMES);
-    comboActions.push_back(punchHeadbutt);
-    
-    ComboAction* kickPunch = new ComboAction();
-    kickPunch->addAnimation("ComboActions/Kick_Punch_Combo/Kick_Punch_Combo", NUM_KICK_PUNCH_FRAMES);
-    comboActions.push_back(kickPunch);
+    loadRandomCombos();
 
-    ComboAction* kickKick = new ComboAction();
-    kickKick->addAnimation("ComboActions/Kick_Kick_Combo/Kick_Kick_Combo", NUM_KICK_KICK_FRAMES);
-    comboActions.push_back(kickKick);
-    
-    ComboAction* kickHeadbutt = new ComboAction();
-    kickHeadbutt->addAnimation("ComboActions/Kick_Headbutt_Combo/Kick_Headbutt_Combo", NUM_KICK_HEADBUTT_FRAMES);
-    comboActions.push_back(kickHeadbutt);
-    
-    ComboAction* headbuttPunch = new ComboAction();
-    headbuttPunch->addAnimation("ComboActions/Headbutt_Punch_Combo/Headbutt_Punch_Combo", NUM_HEADBUTT_PUNCH_FRAMES);
-    comboActions.push_back(headbuttPunch);
-    
-    ComboAction* headbuttKick = new ComboAction();
-    headbuttKick->addAnimation("ComboActions/Headbutt_Kick_Combo/Headbutt_Kick_Combo", NUM_HEADBUTT_KICK_FRAMES);
-    comboActions.push_back(headbuttKick);
-     
-    ComboAction* slideTackle = new ComboAction();
-    slideTackle->addAnimation("ComboActions/Slide_Tackle/Slide_Tackle", NUM_SLIDE_TACKLE_FRAMES);
-    comboActions.push_back(slideTackle);
-    
-    ComboAction* cartwheel = new ComboAction();
-    cartwheel->addAnimation("ComboActions/Cartwheel/Cartwheel", NUM_CARTWHEEL_FRAMES);
-    comboActions.push_back(cartwheel);
-    
-    ComboAction* punchBehindPunch = new ComboAction();
-    punchBehindPunch->addAnimation("ComboActions/Punch_Behind_Punch/Punch_Behind_Punch", NUM_PUNCH_BEHIND_PUNCH_FRAMES);
-    comboActions.push_back(punchBehindPunch);
-    
-    ComboAction* jumpKick = new ComboAction();
-    jumpKick->addAnimation("ComboActions/Jump_Kick/Jump_Kick", NUM_JUMP_KICK_FRAMES);
-    comboActions.push_back(jumpKick);
-*/
-    
     // Add Idle animation
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
     
@@ -829,4 +805,69 @@ void Controller::resetState(int level) {
 void Controller::resetMenuSelector() {
     menuSelectorPosition = 0;
     menuSelector.SetPosition(10, 45);
+}
+
+void Controller::loadRandomCombos(int num) {
+
+    for (int i = 0; i < num; i++) {
+        comboActions.push_back(new ComboAction());
+    }
+
+    bool added[NUM_COMBO_ATTACKS];
+    for (int i = 0; i < NUM_COMBO_ATTACKS; i++) {
+        added[i] = false;
+    }
+
+    for (int i = 0; i < comboActions.size(); i++) {
+        delete comboActions[i];
+
+        comboActions[i] = new ComboAction();
+
+        int num = rand()%NUM_COMBO_ATTACKS;
+
+        while (added[num]) {
+            num = (num+1)%NUM_COMBO_ATTACKS;
+        }
+
+        added[num] = true;
+
+        switch(num) {
+        case 0:
+            comboActions[i]->addAnimation("ComboActions/Punch_Punch_Combo/Punch_Punch_Combo", NUM_PUNCH_PUNCH_FRAMES);
+            break;
+        case 1:
+            comboActions[i]->addAnimation("ComboActions/Punch_Kick_Combo/Punch_Kick_Combo", NUM_PUNCH_KICK_FRAMES);
+            break;
+        case 2:
+            comboActions[i]->addAnimation("ComboActions/Punch_Headbutt_Combo/Punch_Headbutt_Combo", NUM_PUNCH_HEADBUTT_FRAMES);
+            break;
+        case 3:
+            comboActions[i]->addAnimation("ComboActions/Kick_Punch_Combo/Kick_Punch_Combo", NUM_KICK_PUNCH_FRAMES);
+            break;
+        case 4:
+            comboActions[i]->addAnimation("ComboActions/Kick_Kick_Combo/Kick_Kick_Combo", NUM_KICK_KICK_FRAMES);
+            break;
+        case 5:
+            comboActions[i]->addAnimation("ComboActions/Kick_Headbutt_Combo/Kick_Headbutt_Combo", NUM_KICK_HEADBUTT_FRAMES);
+            break;
+        case 6:
+            comboActions[i]->addAnimation("ComboActions/Headbutt_Punch_Combo/Headbutt_Punch_Combo", NUM_HEADBUTT_PUNCH_FRAMES);
+            break;
+        case 7:
+            comboActions[i]->addAnimation("ComboActions/Headbutt_Kick_Combo/Headbutt_Kick_Combo", NUM_HEADBUTT_KICK_FRAMES);
+            break;
+        case 8:
+            comboActions[i]->addAnimation("ComboActions/Slide_Tackle/Slide_Tackle", NUM_SLIDE_TACKLE_FRAMES);
+            break;
+        case 9:
+            comboActions[i]->addAnimation("ComboActions/Cartwheel/Cartwheel", NUM_CARTWHEEL_FRAMES);
+            break;
+        case 10:
+            comboActions[i]->addAnimation("ComboActions/Punch_Behind_Punch/Punch_Behind_Punch", NUM_PUNCH_BEHIND_PUNCH_FRAMES);
+            break;
+        case 11:
+            comboActions[i]->addAnimation("ComboActions/Jump_Kick/Jump_Kick", NUM_JUMP_KICK_FRAMES);
+            break;
+        }
+    }
 }
