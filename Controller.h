@@ -107,6 +107,7 @@ private:
 	int criticalFrame;
     
     bool goToMenu;
+    bool doCombo;
 
 	Player* player;
 	Enemy* enemy;

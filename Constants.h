@@ -36,7 +36,7 @@ const int NUM_COMBO_ATTACKS = 12;
 const int NUM_COMBOS_PER_DIFFICULTY = 4;
 
 // Combo meter constants
-const int COMBO_THRESHOLD_1 = 25;
+const int COMBO_THRESHOLD_1 = 50;
 const int COMBO_THRESHOLD_2 = 100;
 
 // Goal animation constants
