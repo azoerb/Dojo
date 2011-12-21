@@ -15,7 +15,7 @@ Controller::Controller() {
     hitCounter = 0;
     
     goToMenu = false;
-    
+    doCombo = false;
     endlessMode = false;
     
     gameState = GAME_MENU;
@@ -75,10 +75,24 @@ void Controller::update() {
             if(numActionFrames == 0) {
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-					if (criticalAttack || comboAttack) {
+					if (criticalAttack || (comboAttack && doCombo)) {
 						enemy->setHealth(enemy->getHealth() - CRITICAL_ACTION_DAMAGE);
+
+                        // Attack+ powerup
+                        if (powerupCounter[0] > 0) {
+                            enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                        }
+
+                        comboAttack = false;
+                        criticalAttack = false;
+                        doCombo = false;
 					} else {
 						enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+
+                        // Attack+ powerup
+                        if (powerupCounter[0] > 0) {
+                            enemy->setHealth(enemy->getHealth() - BASIC_ACTION_DAMAGE);
+                        }
 					}
                     break;
                 case ANIMATION_COUNTER:
@@ -89,11 +103,11 @@ void Controller::update() {
                  // check if player died
                 if (player->getHealth() <= 0) {
                     lives--;
-					//check to see if you have 3 lives left..
+					// check to se if the player has any more lives
 					if (lives > 0) {
-						//we have two options, restart the level, or just continue - like I am.
+						// we have two options, restart the level, or just continue - like I am.
 						player->setHealth(PLAYER_HEALTH);
-						//now display menu?
+						// now display menu?
 					} else {	
 						lives = 3;
                         level = 1;
@@ -155,7 +169,7 @@ void Controller::update() {
 						dojo.Resize(WINDOW_WIDTH,WINDOW_HEIGHT);
 						window->Draw(dojo);
 
-                        if ((level-2)/2 < comboActions.size() && (level-2)/2 >= 0) {
+                        if (level % 2 == 0 && (level-2)/2 < comboActions.size() && (level-2)/2 >= 0) {
                             comboActions[(level-2)/2]->unlock();
                             displayText("You have unlocked the " + comboDescriptions[(level-2)/2] + " combo!", 0, 0, window, 24, sf::Color(255, 255, 255), true);
                         }
@@ -189,6 +203,13 @@ void Controller::update() {
             elapsedTime = .1;
         }
 
+        // update powerup counters
+        for (int i = 0; i < NUM_POWERUPS; i++) {
+            if (powerupCounter[i] > 0) {
+                powerupCounter[i]--;
+            }
+        }
+
         // set to true when we encounter the first target in the respective column
         // to avoid checking far away targets
         // this fixes the problem of "missing" all targets in the column
@@ -214,13 +235,22 @@ void Controller::update() {
 							targetSets[i].changeAccuracy(MISS_PENALTY);
                             goals[col].goalMiss();
                             hitCounter = 0;
+                            comboAttack = false;
                         }
                     } else {
                         found[col] = true;
+
+                        if (powerupSet && targets->at(j).isSpecial()) {
+                            powerupTargetCount --;
+                        }
+
                         targetSets[i].changeAccuracy(result);
                         targetSets[i].removeTarget(j);
                         hit = true;
                         hitCounter++;
+                        if (hitCounter % COMBO_THRESHOLD_1 == 0) {
+                            comboAttack = true;
+                        }
 
 						if (result >= HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
                             goals[col].goalHit(true);
@@ -244,10 +274,22 @@ void Controller::update() {
 
             // Once all of the targetSet's targets are gone
             if (targets->size() == 0) {
+
+                // check for powerup
+                if (powerupSet && powerupTargetCount == 0) {
+                    powerupTargetCount--;
+
+                    int powerup = rand() % NUM_POWERUPS;
+                    powerupCounter[powerup] = POWERUP_DURATION;
+                }
+
                 // Determine accuracy and play animation
                 float accuracy = targetSets[i].getAccuracy();
-                criticalAttack = false;
-                comboAttack = false;
+
+                // accuracy boost powerup
+                if (powerupCounter[1] > 0) {
+                    accuracy += 25;
+                }
 
                 currentAnimation = rand() % basicActions.size();
                                 
@@ -255,28 +297,29 @@ void Controller::update() {
                     currentAnimationType = ANIMATION_COUNTER;
 
                 } else if (accuracy < HIT_BOUND + ((difficultyLevel - 1) * (100 - HIT_BOUND))) {
-                    // use combo attack
+                    /*/ use combo attack
                     if (hitCounter > COMBO_THRESHOLD_2) {
 						criticalFrame = NUM_CRITICAL_FRAMES;
 
                         if (getRandomComboAttack() != -1) {
                             currentAnimation = getRandomComboAttack();
-                            printf("combo: %d\n", currentAnimation);
                             comboAttack = true;
                         }
-                    }
+                    }*/
                     currentAnimationType = ANIMATION_BLOCK;
                 } else {
                     currentAnimationType = ANIMATION_HIT;
 
-                    // use combo attack
-                    if (hitCounter > COMBO_THRESHOLD_1) {
-						criticalFrame = NUM_CRITICAL_FRAMES;
-
+                    if (comboAttack) { // use combo attack
                         if (getRandomComboAttack() != -1) {
+                            criticalFrame = NUM_CRITICAL_FRAMES;
                             currentAnimation = getRandomComboAttack();
-                            printf("combo: %d\n", currentAnimation);
-                            comboAttack = true;
+
+                            //printf("combo: %d\n", currentAnimation);
+                            doCombo = true;
+                        } else {
+                            // If you don't have any combos unlocked don't do a combo
+                            doCombo = false;
                         }
                     }
                     // critical attack
@@ -286,7 +329,7 @@ void Controller::update() {
 					}
                 }
 
-                if (comboAttack) {
+                if (doCombo) {
                     numActionFrames = comboActions[currentAnimation]->getNumAnimationFrames();
                 } else {
                     basicActions[currentAnimation]->selectAnimation(currentAnimationType);
@@ -297,13 +340,13 @@ void Controller::update() {
                 bool addNewSet = true;
                 switch(currentAnimationType) {
                 case ANIMATION_HIT:
-					if (criticalAttack || comboAttack) {
-						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE) {
+                    if (criticalAttack || (comboAttack && doCombo)) {
+						if (enemy->getHealth() <= CRITICAL_ACTION_DAMAGE || (powerupCounter[0] > 0 && enemy->getHealth() <= CRITICAL_ACTION_DAMAGE + BASIC_ACTION_DAMAGE)) {
 							enemy->setHealth(0);
                             addNewSet = false;
-						}
+                        }
 					} else {
-						if (enemy->getHealth() <= BASIC_ACTION_DAMAGE) {
+                        if (enemy->getHealth() <= BASIC_ACTION_DAMAGE || (powerupCounter[0] > 0 && enemy->getHealth() <= 2*BASIC_ACTION_DAMAGE)) {
 							enemy->setHealth(0);
                             addNewSet = false;
 						}
@@ -391,16 +434,26 @@ void Controller::draw() {
             std::stringstream count;
             count << hitCounter;
 
-            if (hitCounter >= COMBO_THRESHOLD_2) {
+            if (comboAttack) {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 0, 0), true);
-            } else if (hitCounter >= COMBO_THRESHOLD_1) {
+            } /*else if (hitCounter >= COMBO_THRESHOLD_1) {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 0), true);
-            } else {
+            } */else {
                 displayText("Combo: " + count.str(), WINDOW_WIDTH/2 - 90, WINDOW_HEIGHT - 90, window, 32, sf::Color(255, 255, 255), true);
             }
 
+            // draw current powerups
+            // 2X attack
+            if (powerupCounter[0] > 0) {
+                displayText("ATTACK+", WINDOW_WIDTH/2 - 80, WINDOW_HEIGHT - 110, window, 16, sf::Color(255, 0, 0), true);
+            }
+            // accuracy boost
+            if (powerupCounter[1] > 0) {
+                displayText("ACCURACY+", WINDOW_WIDTH/2, WINDOW_HEIGHT - 110, window, 16, sf::Color(255, 0, 0), true);
+            }
+
             if(numActionFrames > 0) {
-                if (comboAttack) {
+                if (comboAttack && doCombo) {
                     comboActions[currentAnimation]->draw(window);
                 } else {
                     basicActions[currentAnimation]->draw(window);
@@ -593,7 +646,7 @@ void Controller::processEvents() {
                             switch (menuSelectorPosition) {
                                 case 0:
                                     // Easy
-                                    difficultyLevel = 1.0;
+                                    difficultyLevel = DIFFICULTY_EASY;
                                     currentNumColumns = 4;
                                     resetState(1);
                                     break;
@@ -666,6 +719,7 @@ void Controller::processEvents() {
 
 void Controller::loadResources() {
     if (!targetImg.LoadFromFile("target.png") ||
+        !targetAltImg.LoadFromFile("target-alt.png") ||
         !heartImg.LoadFromFile("heart.png") ||
         !goalImg.LoadFromFile("goal.png") ||
         !goalAltImg.LoadFromFile("goal-alt.png") ||
@@ -754,8 +808,8 @@ void Controller::initializeObjects() {
     idleAnimation.init("Actions/Idle/Idle", NUM_IDLE_FRAMES);
     
     // Add transition animations
-    climbAnimation.init("Transitions/Climb/Climb", NUM_CLIMB_FRAMES);
-    enterDojoAnimation.init("Transitions/Enter_Dojo/Enter_Dojo", NUM_ENTER_DOJO_FRAMES);
+    //climbAnimation.init("Transitions/Climb/Climb", NUM_CLIMB_FRAMES);
+    //enterDojoAnimation.init("Transitions/Enter_Dojo/Enter_Dojo", NUM_ENTER_DOJO_FRAMES);
 
     // setup SoundManager
     #ifdef USE_SOUND
@@ -772,11 +826,25 @@ void Controller::addRandomSet() {
     }
     int speed = SPEED_START + ((difficultyLevel - 1) * 200) + (level * SPEED_INCREASE);
 
+    bool havePowerup = false;
+
+    if (rand() % 100 < POWERUP_THRESHOLD) {
+        int powerup = rand() % NUM_POWERUPS;
+        havePowerup = true;
+        powerupTargetCount = 0;
+    }
+
 	targetSets.push_back(TargetSet());
     int y = 0;
 	for(int i = 0; i < numTargets; i++) {
         int col = rand() % currentNumColumns;
-		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, speed, col, y));
+
+        if (havePowerup && rand() % 100 < POWERUP_TARGET_THRESHOLD) {
+    		targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, &targetAltImg, speed, col, y, true));
+            powerupTargetCount++;
+        } else {
+		    targetSets[targetSets.size() - 1].addTarget(Target(&targetImg, &targetAltImg, speed, col, y));
+        }
 
         // add doubles, triples, quadruples
         /*
@@ -795,6 +863,10 @@ void Controller::addRandomSet() {
 
         y += COLUMN_WIDTH;
 	}
+
+    if (powerupTargetCount > 0) {
+        powerupSet = true;
+    }
 }
 
 void Controller::randomizeGoals() {
@@ -836,6 +908,13 @@ void Controller::resetState(int level) {
     }
 
     gameState = GAME_WAIT_FOR_INPUT;
+
+    // reset powerups
+    for (int i = 0; i < NUM_POWERUPS; i++) {
+        powerupCounter[i] = 0;
+    }
+    powerupTargetCount = 0;
+    powerupSet = false;
     
     targetSets.clear();
     for (int i = 0; i < NUM_COLUMNS; i++) {
